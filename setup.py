@@ -15,6 +15,7 @@ install_requires = [
     'django-nose',
     'lizard-ui >= 3.0',
     'pkginfo',
+    'pika >= 0.9.5'
     ],
 
 tests_require = [

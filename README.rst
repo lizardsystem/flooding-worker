@@ -1,7 +1,64 @@
 lizard-flooding-worker
 ==========================================
 
-Introduction
+Itroduction
+------------------------
 
-Usage, etc.
+This the messaging application to manage the lizard-flooding
+tasks. It uses the RabbitMQ as message broker, pika as client to send
+en recieve messages from the broker.
 
+
+Development installation
+------------------------
+
+The first time, you'll have to run the "bootstrap" script to set up setuptools
+and buildout::
+
+    $> python bootstrap.py
+
+And then run buildout to set everything up::
+
+    $> bin/buildout
+
+(On windows it is called ``bin\buildout.exe``).
+
+You'll have to re-run buildout when you or someone else made a change in
+``setup.py`` or ``buildout.cfg``.
+
+The current package is installed as a "development package", so
+changes in .py files are automatically available (just like with ``python
+setup.py develop``).
+
+If you want to use trunk checkouts of other packages (instead of released
+versions), add them as an "svn external" in the ``local_checkouts/`` directory
+and add them to the ``develop =`` list in buildout.cfg.
+
+Tests can always be run with ``bin/test`` or ``bin\test.exe``.
+
+The message broker settings are in brokerconfig.py
+
+Load fixture
+$>bin/django loaddata lizard_flooding_worker_initial
+
+Start logging_workers, it wil save the logs into database
+
+$>bin/django logging_worker
+or
+$>bin/django supervisord
+
+Start one or more workers per queue (queues are defined in
+brokerconfig.py). The workers read own queue sleep a few seconds and
+send the logging to logging queue.
+
+$>bin/django run_common_worker queue
+
+Start scenario. It runs some dummy scenario.
+
+$>bin/django start_scenario
+
+Open website on http://localhost:8000/logs/ to monitor the logging
+Open website on http://10.100.155.150:55672 to monitor the broker
+
+For more information about RabbitMQ take a look at
+http://www.rabbitmq.com/.
