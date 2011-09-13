@@ -1,0 +1,2 @@
+include *.rst
+recursive-include lizard_flooding_worker *.rst *.py *.html *.css *.js *.jpg *.png *.gif *.pdf
