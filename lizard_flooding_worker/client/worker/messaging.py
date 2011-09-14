@@ -19,8 +19,8 @@ from lizard_flooding_worker.models import Scenario
 from lizard_flooding_worker.models import Task
 from lizard_flooding_worker.models import Logging
 
-import tmp_job
-from message_handler import AMQPMessageHandler
+import tmp_jbo
+from message_logging_handler import AMQPMessageHandler
 
 
 def retrieve_scenario_options(scenario_id):

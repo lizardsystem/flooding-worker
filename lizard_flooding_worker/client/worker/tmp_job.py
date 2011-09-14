@@ -6,11 +6,6 @@ import logging.handlers
 
 
 def main(logger, body):
-    #logging.handlers.AMQPMessageHandler = message_handler
-    #amqp_handler = logging.handlers.message_handler.AMQPMessageHandler(body)
-    #amqp_handler.setLevel(logging.DEBUG)
-    #logger.addHandler(amqp_handler)
-
     logger.debug('Test 1')
     logger.info('Test 2')
     logger.warning('Test 3')
