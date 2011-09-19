@@ -13,7 +13,6 @@ install_requires = [
     'Django',
     'django-extensions',
     'django-nose',
-    'lizard-ui',
     'pkginfo',
     'pika >= 0.9.5'
     ],
