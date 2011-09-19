@@ -22,7 +22,6 @@ urlpatterns = patterns(
     url(r'^log/customer/(?P<customer_id>\d+)/scenario/(?P<scenario_id>\d+)/$',
      'lizard_flooding_worker.views.homepage',
         name='lizard_flooding_worker-loggings'),
-    (r'^ui/', include('lizard_ui.urls')),
     (r'^admin/', include(admin.site.urls)),
     )
 

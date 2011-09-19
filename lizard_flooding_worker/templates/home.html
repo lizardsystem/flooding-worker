@@ -1,61 +1,12 @@
-{% extends "lizard_ui/lizardbase.html" %}
+{% extends "lizard/base.html" %}
 
-{% block css %}
-{{ block.super }}
-<link type="text/css"
-      href="{{ STATIC_URL }}lizard_map/lizard_map.css"
-      media="screen, projection"
-      rel="stylesheet" />
-<meta http-equiv="refresh" content="5" />
-{% endblock css %}
-
-{% block javascript %}
-{{ block.super }}
-
-{% endblock javascript %}
-
-{% block sidebar %}
-<div class="sidebarbox" id="accordion">
-<h2>Customers</h2>
-<ul>
-{% for customer in customers %}
-   <li>
-     <a href="{% url lizard_flooding_worker-scenarios customer_id=customer.id %}">
-        {{ customer.name }}
-     </a>
-   </li>
-{% empty %}
-    <li>
-      No customer configurated.
-    </li>
-{% endfor %}
-</ul>
-<h2>Scenarios</h2>
-<ul>
-{% for scenario in scenarios %}
-   <li>
-     <a href="{% url lizard_flooding_worker-loggings customer_id=scenario.customer_id scenario_id=scenario.id %}">
-        {{ scenario.code }}
-     </a>
-   </li>
-{% empty %}
-    <li>
-      No scenario available.
-    </li>
-{% endfor %}
-</ul>
-</div>
-{% endblock sidebar %}
-
-
-{% block above-content %}
-<ul class="map-actions">
-
-</ul>
-{% endblock above-content %}
+{% block title %}
+Lizard-flooding: "Loggings"
+{% endblock %}
 
 {% block content %}
-<table>
+<div style="overflow:auto">
+<table class="timeseriesWrapper">
   <th>Customer</th>
   <th>Scenario</th>
   <th>Task</th>
@@ -73,5 +24,7 @@
     </tr>
 {% endfor %}
 </tabel>
-{% endblock content %}
+</div>
+
+{% endblock %}
 

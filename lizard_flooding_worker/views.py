@@ -24,7 +24,7 @@ def homepage(request,
     if scenario_id is not None:
         loggings = Logging.objects.filter(scenario=int(scenario_id)).order_by('-time')
     else:
-        loggings = []
+        loggings = Logging.objects.all().order_by('-time')
     return render_to_response(
         template,
         {"customers": customers,
