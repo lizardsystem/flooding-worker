@@ -2,8 +2,8 @@
 # (c) Nelen & Schuurmans.  GPL licensed.
 
 CONNECT_SETTINGS = {
-    #"BROKER_HOST": "10.100.155.150",
-    "BROKER_HOST": "localhost",
+    "BROKER_HOST": "10.100.155.150",
+    #"BROKER_HOST": "localhost",
     "BROKER_PORT": 5672,
     "BROKER_USER": "admin",
     "BROKER_PASSWORD": "kikker123",
