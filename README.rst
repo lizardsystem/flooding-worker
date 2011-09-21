@@ -21,6 +21,10 @@ And then run buildout to set everything up::
 
     $> bin/buildout
 
+Create models
+
+    $> bin/django syncdb
+
 (On windows it is called ``bin\buildout.exe``).
 
 You'll have to re-run buildout when you or someone else made a change in
@@ -39,23 +43,26 @@ Tests can always be run with ``bin/test`` or ``bin\test.exe``.
 The message broker settings are in brokerconfig.py
 
 Load fixture
-$>bin/django loaddata lizard_flooding_worker_initial
+
+   $>bin/django loaddata lizard_flooding_worker_initial
 
 Start logging_workers, it wil save the logs into database
 
-$>bin/django logging_worker
+   $>bin/django logging_worker
 or
-$>bin/django supervisord
+   $>bin/django supervisord
 
-Start one or more workers per queue (queues are defined in
-brokerconfig.py). The workers read own queue sleep a few seconds and
-send the logging to logging queue.
+Start one or more workers per queue/task_code (queue=task_code).
+The queues are defined in brokerconfig.py.
+The workers reads message from queue,
+performs task and send the logging to logging queue and/or to next queue.
 
-$>bin/django run_common_worker queue
+$>bin/django run_common_worker queue/task_code
 
-Start scenario. It runs some dummy scenario.
+Start workflow with scenario_id. First task is tmp. hardcoded = "120".
+The next tasks are configurable in admin Scenario.
 
-$>bin/django start_scenario
+$>bin/django start_scenario scenario_id task_code
 
 Open website on http://localhost:8000/logs/ to monitor the logging
 Open website on http://10.100.155.150:55672 to monitor the broker

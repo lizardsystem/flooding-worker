@@ -23,7 +23,7 @@ class Command(BaseCommand):
         if len(args) > 0:
             task_code = args[0]
         else:
-            log.error("NOT STARTED - expects scenario_id as argument")
+            log.error("NOT STARTED - expects task_code as argument")
             return
 
 

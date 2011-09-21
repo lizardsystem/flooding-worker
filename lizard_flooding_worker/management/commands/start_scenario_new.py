@@ -2,23 +2,23 @@
 # (c) Nelen & Schuurmans.  GPL licensed.
 
 from django.core.management.base import BaseCommand
-from lizard_flooding_worker.client.worker.action_scenario import ActionScenario
+from lizard_flooding_worker.client.worker.action_workflow import ActionWorkflow
 from lizard_flooding_worker.client.worker.broker_connection import BrokerConnection
 from lizard_flooding_worker.client.worker.message_logging_handler import AMQPMessageHandler
 
 import logging
-log = logging.getLogger("lizard-flooding.management.start_scenaro")
+log = logging.getLogger("lizard-flooding.management.start_workflow")
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        scenario_id = None
+        workflow_id = None
         numeric_level = 10  # DEBUG
 
         if len(args) > 0:
-            scenario_id = args[0]
+            workflow_id = args[0]
         else:
-           log.error("NOT STARTED: Expected scenario id as argument.")
+           log.error("NOT STARTED: Expected workflow id as argument.")
            return
 
         if len(args) > 1:
@@ -36,7 +36,7 @@ class Command(BaseCommand):
             log.error("Could not connect to broker.")
             return
 
-        action = ActionScenario(connection, scenario_id)
+        action = ActionWorkflow(connection, workflow_id)
 
         logging.handlers.AMQPMessageHandler = AMQPMessageHandler
         broker_handler = logging.handlers.AMQPMessageHandler(action)
@@ -44,5 +44,5 @@ class Command(BaseCommand):
 
         action.set_broker_logging_handler(broker_handler)
 
-        action.start_scenario("120")
+        action.start_workflow("120")
         connection.close()

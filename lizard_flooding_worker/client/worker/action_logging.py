@@ -5,7 +5,7 @@ import simplejson
 from datetime import datetime
 
 from lizard_flooding_worker.models import Customer
-from lizard_flooding_worker.models import Scenario
+from lizard_flooding_worker.models import Workflow
 from lizard_flooding_worker.models import Task
 from lizard_flooding_worker.models import Logging
 
@@ -25,10 +25,10 @@ class ActionLogging(Action):
         body_dict = simplejson.loads(body)
         try:
             new_logging = Logging(
-                customer=Customer.objects.get(pk=body_dict["customer_id"]),
-                scenario=Scenario.objects.get(pk=body_dict["scenario_id"]),
+                customer=body_dict["customer_id"],
+                workflow=body_dict["workflow_id"],
                 task=Task.objects.all().filter(
-                    scenario=body_dict["scenario_id"]).filter(
+                    workflow=body_dict["workflow_id"]).filter(
                     code=body_dict["curr_task_code"])[0],
                     time=datetime.utcfromtimestamp(body_dict["event_time"]),
                 level=body_dict["curr_log_level"],

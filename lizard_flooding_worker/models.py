@@ -1,6 +1,7 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.txt.
 import logging
 from django.db import models
+from lizard_flooding.models import Scenario
 
 
 LOGGING_LEVELS = (
@@ -16,12 +17,6 @@ PRIORITIES = (
     (1, u'high'),
 )
 
-TASK_CODES = (
-    ('120', "120"),
-    ('130', "130"),
-    ('132', "132"),
-    ('160', "160"),
-)
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +29,9 @@ class Customer(models.Model):
         return self.name
 
 
-class Scenario(models.Model):
+class Workflow(models.Model):
     customer = models.ForeignKey(Customer)
+    scenario = models.ForeignKey(Scenario)
     code = models.CharField(max_length=100)
     start_time = models.DateTimeField(
         blank=True,
@@ -56,20 +52,22 @@ class Scenario(models.Model):
         return self.code
 
 
-class Task(models.Model):
+class TaskType(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __unicode__(self):
+        return self.name
+
+
+class WorkflowTask(models.Model):
+    workflow = models.ForeignKey(Workflow)
+    code = models.ForeignKey(TaskType)
     scenario = models.ForeignKey(Scenario)
-    code = models.CharField(
-        choices=TASK_CODES,
-        max_length=4,
-        blank=True,
-        null=True)
-    started_at = models.DateTimeField(
-        blank=True,
-        null=True)
-    ended_at = models.DateTimeField(
-        blank=True,
-        null=True)
     sequence = models.IntegerField()
+    tstart = models.DateTimeField(blank=True, null=True)
+    tfinished = models.DateTimeField(blank=True, null=True)
+    errorlog = models.TextField(blank=True, null=True)
+    successful = models.NullBooleanField(blank = True, null=True)
 
     def __unicode__(self):
         return self.code
@@ -77,8 +75,9 @@ class Task(models.Model):
 
 class Logging(models.Model):
     customer = models.ForeignKey(Customer)
+    workflow = models.ForeignKey(Workflow)
+    task = models.ForeignKey(WorkflowTask)
     scenario = models.ForeignKey(Scenario)
-    task = models.ForeignKey(Task)
     time = models.DateTimeField(
         blank=True,
         null=True)

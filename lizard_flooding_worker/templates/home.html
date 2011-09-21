@@ -8,7 +8,7 @@ Lizard-flooding: "Loggings"
 <div style="overflow:auto">
 <table class="timeseriesWrapper">
   <th>Customer</th>
-  <th>Scenario</th>
+  <th>Workflow</th>
   <th>Task</th>
   <th>Log Level</th>
   <th>Message</th>
@@ -16,7 +16,7 @@ Lizard-flooding: "Loggings"
 {% for logging in loggings %}
     <tr>
       <td>{{ logging.customer }}</td>
-      <td>{{ logging.scenario }}</td>
+      <td>{{ logging.workflow }}</td>
       <td>{{ logging.task }}</td>
       <td>{{ logging.level }}</td>
       <td>{{ logging.message }}</td>

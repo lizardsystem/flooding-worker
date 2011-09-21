@@ -74,7 +74,7 @@ class ActionTask(Action):
             openbreach.set_broker_logging_handler(self.broker_logging_handler)
             remarks = 'openbreach-' + openbreach.__revision__
             success_code = openbreach.compute_sobek_model(
-                self.body["scenario_id"],
+                self.body["workflow_id"],
                 'c:/temp/%02d/' % self.body["next_sequence"])
         elif code == TASK_PERFORM_SOBEK_SIMULATION_130:
             self.log.debug("execute TASK_PERFORM_SOBEK_SIMULATION_130")
