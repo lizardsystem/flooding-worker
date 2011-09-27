@@ -7,7 +7,6 @@ Lizard-flooding: "Loggings"
 {% block content %}
 <div style="overflow:auto">
 <table class="timeseriesWrapper">
-  <th>Customer</th>
   <th>Workflow</th>
   <th>Task</th>
   <th>Log Level</th>
@@ -15,7 +14,6 @@ Lizard-flooding: "Loggings"
   <th>Time</th>
 {% for logging in loggings %}
     <tr>
-      <td>{{ logging.customer }}</td>
       <td>{{ logging.workflow }}</td>
       <td>{{ logging.task }}</td>
       <td>{{ logging.level }}</td>

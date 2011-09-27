@@ -57,6 +57,14 @@ asc.log.setLevel(logging.INFO)
 
 log = logging.getLogger('nens')
 
+def set_broker_logging_handler(broker_handler=None):
+    """
+    """
+    if broker_handler is not None:
+        log.addHandler(broker_handler)
+    else:
+        log.warning("Broker logging handler does not set.")
+
 DB_SEA = 1
 DB_LAKE = 2
 DB_CANAL = 3
@@ -80,7 +88,7 @@ def add_prefix_to_values_of_attributes(obj, prefix, skip_attribs=[]):
             continue
         if a_name in obj:
             log.debug( "about to add prefix %s to attribute value of a %s: at %s the old value is %s" % (prefix, obj.tag, a_name, [(type(v), v) for v in obj[a_name]]))
-            
+
             obj[a_name] = [prefix+value for value in obj[a_name]]
 
 def add_prefix_to_objects(pool, prefix):
@@ -163,7 +171,7 @@ class Scenario:
                 if os.path.isfile(os.path.join(tmp_dir,fil)):
                     print 'remove'
                     os.remove(os.path.join(tmp_dir,fil))
-        
+
 
 
 
@@ -182,17 +190,17 @@ class Scenario:
 
         log.debug("read the nens.sobek.File objects")
         pool = {}
-        files_to_edit = ['boundary.dat', 'control.def', 'friction.dat', 
-                         'network.cn', 'network.cp', 'network.cr', 'network.d12', 
-                         'network.gr', 'network.st', 'network.tp', 
-                         'nodes.dat', 'initial.dat', 'lateral.dat', 'network.me', 
+        files_to_edit = ['boundary.dat', 'control.def', 'friction.dat',
+                         'network.cn', 'network.cp', 'network.cr', 'network.d12',
+                         'network.gr', 'network.st', 'network.tp',
+                         'nodes.dat', 'initial.dat', 'lateral.dat', 'network.me',
                          'profile.dat', 'profile.def', 'struct.dat', 'struct.def', ]
 
         for item in os.listdir(sobek.File.getSourceDir()):
             if item == '.svn': continue
             if item.lower() in files_to_edit:
                 log.debug("reading sobek.File %s" % item)
-                construct = sobek.File 
+                construct = sobek.File
             else:
                 log.debug("reading sobek.Verbatim %s" % item)
                 construct = sobek.Verbatim
@@ -237,7 +245,7 @@ class Scenario:
         idpool['breach'] = nextid()
         idpool['grid'] = nextid()
         idpool['boundary'] = nextid()
-        idpool['intern'] = nextid() # overridden if we reuse an internal node 
+        idpool['intern'] = nextid() # overridden if we reuse an internal node
         idpool['extern'] = nextid()
 
         log.debug("lkb idpool: %s" % idpool)
@@ -272,12 +280,12 @@ class Scenario:
         log.debug("create output zipfile")
         from zipfile import ZipFile, ZIP_DEFLATED
         self.base = base.models.Setting.objects.get(key='destination_dir').value + '/'
-        
+
         output_dir_name = os.path.join(self.base, self.scenario.get_rel_destdir())
         output_file_name = os.path.join(output_dir_name, "model.zip")
         if not os.path.isdir( output_dir_name ):
             os.makedirs( output_dir_name )
-        output_file = ZipFile(output_file_name, 
+        output_file = ZipFile(output_file_name,
                               mode="w", compression=ZIP_DEFLATED)
 
         log.debug("write elevation and friction grids")
@@ -292,13 +300,13 @@ class Scenario:
         for to_close in self.pool.values():
             to_close.writeToStream(output_file)
         output_file.close()
-        
+
         result, new = self.scenario.result_set.get_or_create(resulttype=flooding.models.ResultType.objects.get(pk=26))
         result.resultloc = os.path.join(self.scenario.get_rel_destdir(),"model.zip")
         result.save()
-        
 
-    def compute_sobek_model(self):  
+
+    def compute_sobek_model(self):
 
         ##################################################################
         """
@@ -356,7 +364,7 @@ class Scenario:
             except KeyError:
                 log.debug("pool2 GLIN had already been purged")
 
-            
+
             #TO DO: verkeerd uitgelijnd. In oude code opzoeken waarvoor dit diende
             '''
             else:
@@ -377,9 +385,9 @@ class Scenario:
                         self.extern = table[row_no, 5], table[row_no, 6]
                         found = True
                         break
-                if found: 
+                if found:
                     break
-            
+
             if not found:
                 raise ValueError("the external node %s does not exist" % node_id)
 
@@ -420,7 +428,7 @@ class Scenario:
             self.pool['initial.dat']['GLIN'][0]['FLIN'][0]['lv ll'][1] = self.max_water_level
             if self.pool['initial.dat']['GLIN'][0]['FLIN'][0]['ty'][0] != 1:
                 log.warning("correcting data: we work with water height, not water depth.")
-                self.pool['initial.dat']['GLIN'][0]['FLIN'][0]['ty'][0] = 1 
+                self.pool['initial.dat']['GLIN'][0]['FLIN'][0]['ty'][0] = 1
 
 
         elif self.breach.externalwater.type == DB_LAKE or self.breach.externalwater.type == DB_INNER_LAKE :
@@ -432,7 +440,7 @@ class Scenario:
             # watergangen verbinden deze twee punten.  de 'peak'
             # plaatsen we waar de 'extern' ligt, de 'mean' 10 meters
             # naar zuiden, 10 meter naar westen.
-            
+
             extern_mean = [self.extern[0] - 10, self.extern[1] - 10]
             self.idpool['extern_mean'] = self.nextid()
             self.idpool['branch_mean'] = self.nextid()
@@ -514,7 +522,7 @@ class Scenario:
             self.pool['network.cr'].append(profile)
 
             storage = sobek.Object("STON id '%(extern)s' ci '%(branch_peak)s' lc 10 st 'Normal' ston" % self.idpool)
-            self.pool['network.cr'].append(storage)                                   
+            self.pool['network.cr'].append(storage)
 
             storage = sobek.Object("STON id '%(extern_mean)s' ci '%(branch_peak)s' lc 0 st 'Normal' ston" % self.idpool)
             self.pool['network.cr'].append(storage)
@@ -547,7 +555,7 @@ class Scenario:
             self.pool['network.st'].append(stru)
 
             stru = sobek.Object("STRU id '%(branch_mean)s' nm '' ci '%(branch_mean)s' lc 5 stru" % self.idpool)
-            self.pool['network.st'].append(stru)                                   
+            self.pool['network.st'].append(stru)
 
             # struct.dat
             stru = sobek.Object("STRU id '%(branch_peak)s' nm '' ca 1 dd '%(branch_peak)s' cj '%(branch_peak)s' stru" % self.idpool)
@@ -557,25 +565,25 @@ class Scenario:
             self.pool['struct.dat'].append(stru)
 
             # struct.def
-            stru = sobek.Object("STDS id '%(branch_peak)s' nm '' ty 6 cl -5 cw 100 ce 1 sc 1 rt 0 stds" % self.idpool)                                  
+            stru = sobek.Object("STDS id '%(branch_peak)s' nm '' ty 6 cl -5 cw 100 ce 1 sc 1 rt 0 stds" % self.idpool)
             stru['cl'] = self.max_water_level - 9
             stru['cw'] = self.extwaters_area*100
             self.pool['struct.def'].append(stru)
 
-            stru = sobek.Object("STDS id '%(branch_mean)s' nm '' ty 6 cl -5 cw 100 ce 1 sc 1 rt 1 stds" % self.idpool)                                  
+            stru = sobek.Object("STDS id '%(branch_mean)s' nm '' ty 6 cl -5 cw 100 ce 1 sc 1 rt 1 stds" % self.idpool)
             stru['cl'] = self.max_water_level - 9
             stru['cw'] = self.extwaters_area*100
             self.pool['struct.def'].append(stru)
 
-            #control.def    
+            #control.def
             cntl_def = sobek.Object(tag="CNTL", id = self.idpool['branch_peak'])
-            cntl_def['nm'] = 'Time' 
-            cntl_def['ct'] = 0 
-            cntl_def['ac'] = 1 
-            cntl_def['ca'] = 0 
-            cntl_def['cf'] = 1 
-            cntl_def['mc'] = 0 
-            cntl_def['bl'] = 1 
+            cntl_def['nm'] = 'Time'
+            cntl_def['ct'] = 0
+            cntl_def['ac'] = 1
+            cntl_def['ca'] = 0
+            cntl_def['cf'] = 1
+            cntl_def['mc'] = 0
+            cntl_def['bl'] = 1
             cntl_def['ti'] = []
             cntl_def['tv'] = []
 
@@ -591,7 +599,7 @@ class Scenario:
             self.pool['control.def'].addObject(cntl_def)
 
 
-         ##################################################################       
+         ##################################################################
 
         else:
             log.error("unrecognized external water")
@@ -613,7 +621,7 @@ class Scenario:
             # select the pool[]['GRID'] if obj[TBLE][0][_, 3] ==
             # location_cutoff_id (it is unique)
 
-            
+
             if loc_cutoff.cutofflocation.externalwater_set.count() > 0:
                 log.debug('external cuttofflocation')
                 pool_ref = pool2
@@ -641,7 +649,7 @@ class Scenario:
                             next_c = table[row_no+1, 0]
                         found = True
                         break
-                if found: 
+                if found:
                     break
             if not found:
                 for candidate_grid in pool_ref['network.gr']['GRID']:
@@ -671,8 +679,8 @@ class Scenario:
                 st = pool_ref["network.st"]
                 # select here all structures on the same branch falling
                 # between previous and next node (close to location cutoff).
-                usable_structs = [(abs(here_c - obj['lc'][0]), obj) 
-                                  for obj in pool_ref['network.st']['STRU'] 
+                usable_structs = [(abs(here_c - obj['lc'][0]), obj)
+                                  for obj in pool_ref['network.st']['STRU']
                                   if prev_c < obj['lc'][0] < next_c and obj['ci'][0] == branch_id]
 
                 idnext=self.nextid()
@@ -701,7 +709,7 @@ class Scenario:
                     stru_st = sobek.Object(tag="STRU", id=idnext)
                     # some c for the new weir... ... take 33% of the distance
                     # towards the furthest adjacent point
-                    c = max([(next_c - here_c, (here_c*2 + next_c)/3), 
+                    c = max([(next_c - here_c, (here_c*2 + next_c)/3),
                              (here_c - prev_c, (here_c*2 + prev_c)/3)]
                             )[1]
                     stru_st['lc'] = c
@@ -740,22 +748,22 @@ class Scenario:
                     stru_def['cl'] = crest_level
 
                 cntl_def = sobek.Object(tag="CNTL", id = stru_dat['cj'][0])
-                cntl_def['nm'] = 'Time' 
-                cntl_def['ct'] = 0 
-                cntl_def['ac'] = 1 
-                cntl_def['ca'] = 0 
-                cntl_def['cf'] = 1 
-                cntl_def['mc'] = 0 
-                cntl_def['bl'] = 1 
+                cntl_def['nm'] = 'Time'
+                cntl_def['ct'] = 0
+                cntl_def['ac'] = 1
+                cntl_def['ca'] = 0
+                cntl_def['cf'] = 1
+                cntl_def['mc'] = 0
+                cntl_def['bl'] = 1
                 cntl_def['ti'] = []
                 cntl_def['tv'] = []
                 pool_ref['control.def'].addObject(cntl_def)
 
                 log.debug("in the control definition, add a new table")
-                
+
                 if action_of_cutoff == 2:
                     cntl_def.addRow([datetime.datetime(2000, 1, 1) + delay_of_cutoff - datetime.timedelta(0, 60), 1000])
-                    cntl_def.addRow([datetime.datetime(2000, 1, 1) + delay_of_cutoff, stru_def['cl'][0]])                    
+                    cntl_def.addRow([datetime.datetime(2000, 1, 1) + delay_of_cutoff, stru_def['cl'][0]])
                 else:
                     cntl_def.addRow([datetime.datetime(2000, 1, 1) + delay_of_cutoff - datetime.timedelta(0, 60), stru_def['cl'][0]])
                     cntl_def.addRow([datetime.datetime(2000, 1, 1) + delay_of_cutoff, 1000])
@@ -769,7 +777,7 @@ class Scenario:
         # network location of model
         lead_str = (self.base + self.scenario.sobekmodel_inundation.project_fileloc)
         self.frict_grid = None
-        
+
         if int(self.pool['friction.dat']['D2FR', domain_id]['mt cp'][0]) in [1,2]:
             frict_grid_name = self.pool['friction.dat']['D2FR', domain_id]['mt cp'][1]
             log.info("%s" % str(self.pool['friction.dat']['D2FR'][0]['mt cp']))
@@ -791,7 +799,7 @@ class Scenario:
 
             if frict_grid:
                 print frict_grid_name
-                
+
                 self.new_frict_name = new_frict_name = '../WORK/grid/' + frict_grid.srcname
                 print new_frict_name
                 self.pool['friction.dat']['D2FR', domain_id]['mt cp'][1] = new_frict_name
@@ -811,7 +819,7 @@ class Scenario:
 
         if elev_grid[self.breach.internalnode.coords] is False:
             raise ValueError("the 'intern' point is really outside of the grid")
-        
+
         if elev_grid[self.breach.internalnode.coords] is None:
             print 'ooo'
             #raise ValueError("the 'intern' point is on an invalid pixel of the grid")
@@ -891,12 +899,12 @@ class Scenario:
             for col in range(len(elevation_grid)):
                 for row in range(len(elevation_grid[0])):
                     result[col][row] = 0
-            return result        
+            return result
 
         def add_adjusted_embankments(elevation_grid, adjustment_grid):
-            
+
             result = elevation_grid.copy()
-        
+
             for col in range(len(elevation_grid)):
                 for row in range(len(elevation_grid[0])):
                     result[col][row] = elevation_grid[col][row] + adjustment_grid[col][row]
@@ -929,19 +937,19 @@ class Scenario:
                         layer = ds.CreateLayer(ds.GetName(), geom_type = ogr.wkbLineString, srs = t_srs)
                         layer.CreateField(ogr.FieldDefn('adjustment', ogr.OFTReal))
 
-                        fid = 0                 
-                        
+                        fid = 0
+
                         for measure in self.scenario.strategy.measure_set.filter(reference_adjustment = reference):
                             for embankement_unit in measure.embankmentunit_set.all():
                                 feat = ogr.Feature(feature_def=layer.GetLayerDefn())
                                 geom_trans = embankement_unit.geometry.transform(28992, True)
                                 geom = ogr.CreateGeometryFromWkt(geom_trans.ewkt.split(';')[1])
                                 feat.SetGeometry(geom)
-                                
+
                                 feat.SetFID(fid)
                                 feat.SetField('adjustment', measure.adjustment)
                                 layer.CreateFeature(feat)
-                                fid = fid + 1            
+                                fid = fid + 1
 
                         log.info('nr of nodes '+ str(fid))
                         layer.SyncToDisk()
@@ -953,9 +961,9 @@ class Scenario:
                         #asc.AscGrid.apply(lambda x: 0, self.elev_grid)
                         for col in range(1, empty_grid.ncols+1):
                             for row in range(1, empty_grid.nrows+1):
-                            
+
                                 empty_grid[col,row] = 0
- 
+
 
                         empty_file = file(empty_grid_name,'w')
                         empty_grid.writeToStream(empty_file, empty_grid)
@@ -970,7 +978,7 @@ class Scenario:
                         self.elev_grid = elev_grid = asc.AscGrid.apply(lambda x,y: x+y, self.elev_grid, adjustment_grid)
                         adjustment_grid = None
 
-                         
+
                     else:
                         target_ds = gdal.Open(str(elev_grid_name))
                         err = gdal.RasterizeLayer(target_ds, [1], layer, options=["ATTRIBUTE=adjustment"])
@@ -979,7 +987,7 @@ class Scenario:
                         dst_ds = None
 
                         self.elev_grid = elev_grid = asc.AscGrid(tmp_asc_filename)
-  
+
                     ds.Destroy()
                     ds = None
 
@@ -1094,7 +1102,7 @@ class Scenario:
         if self.breach.externalwater.type == DB_LAKE:
             crsn['rl'] = self.max_water_level - 0.02
         else:
-            crsn['rl'] = self.profile_depth    
+            crsn['rl'] = self.profile_depth
 
 
         self.pool['profile.dat'].append(crsn)
@@ -1128,7 +1136,7 @@ class Scenario:
         ##################################################################
         log.debug("did we hit anything and what was it?")
         if hit_points:
-            if intern_sobek['lc'][0] == 0: 
+            if intern_sobek['lc'][0] == 0:
                 log.debug("we hit a connection node, intern we are already done")
             else:
                 log.debug("we hit a calculation point - marking it as linkage node")
@@ -1217,7 +1225,7 @@ class Scenario:
                                               ('LevelFromStreetLevel', 0),
                                               ('RunOff', 0),
                                               ('VolumeOnStreet', 0),
-                                              ('NodeVolume', 0), 
+                                              ('NodeVolume', 0),
                                               ],
                                'ResultsStructures':[('Discharge', -1),
                                                     ('WaterLevel', 0),
@@ -1245,18 +1253,18 @@ class Scenario:
                 config.remove_option(section, key)
                 config.set(section, key, str(value))
 
-        for prefix, date in [("begin", self.start_of_simulation), 
+        for prefix, date in [("begin", self.start_of_simulation),
                              ("end", self.start_of_simulation + self.duration_of_simulation)]:
             for field in ["year", "month", "day", "hour", "minute", "second", ]:
                 config.remove_option('Simulation', prefix + field)
-                config.set('Simulation', prefix + field, 
+                config.set('Simulation', prefix + field,
                            str(date.__getattribute__(field)))
 
         log.debug("updated settings: %s", str(self.pool['settings.dat'].content))
 
         self.pool['settings.dat'].truncate(0)
         config.write(self.pool['settings.dat'])
-        
+
 
 def compute_sobek_model(scenario, tmp_dir = 'c:/tmp/1/'):
     """task 120: compute_sobek_model
@@ -1271,7 +1279,7 @@ def compute_sobek_model(scenario, tmp_dir = 'c:/tmp/1/'):
     s.collect_initial_data()
     s.compute_sobek_model()
     s.save_sobek_model()
-    
+
     return True
 
 

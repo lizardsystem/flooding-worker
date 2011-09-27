@@ -1,22 +1,22 @@
 #!c:/python25/python.exe
 # -*- coding: utf-8 -*-
 #***********************************************************************
-#*   
+#*
 #***********************************************************************
 #*                      All rights reserved                           **
-#*   
-#*   
+#*
+#*
 #*                                                                    **
-#*   
-#*   
-#*   
+#*
+#*
+#*
 #***********************************************************************
 #* Library    : base class for threaded programs
-#* Purpose    : derive from this to implement a multithreaded program 
+#* Purpose    : derive from this to implement a multithreaded program
 #*              where threads are not supposed to return.
-#*               
+#*
 #* Project    : J0005
-#*  
+#*
 #* $Id$
 #*
 #* initial programmer :  Mario Frasca
@@ -31,13 +31,21 @@ if sys.version_info < (2, 4):
 
 import logging, threading
 
-log = logging.getLogger('nens.lizard.kadebreuk') 
+log = logging.getLogger('nens.lizard.kadebreuk')
+
+def set_broker_logging_handler(broker_handler=None):
+    """
+    """
+    if broker_handler is not None:
+        log.addHandler(broker_handler)
+    else:
+        log.warning("Broker logging handler does not set.")
 
 class threaded_program:
 
     def __init__(self, tasks=None):
         if tasks == None:
-            tasks = [i for i in dir(self) 
+            tasks = [i for i in dir(self)
                      if i.startswith('thread_') and callable(getattr(self, i))]
         self.threads = {}
         for key in tasks:
@@ -48,7 +56,7 @@ class threaded_program:
             t.start()
 
         threading.Thread(target=self.watchdog).start()
-    
+
     def sleep(self, name, length, more_or_less):
         "sleeps length seconds (more or less)"
 
@@ -61,7 +69,7 @@ class threaded_program:
 
     def watchdog(self):
         "ensures all threads in self.threads are running"
-        
+
         log.debug('starting watchdog thread')
         while True:
             try:

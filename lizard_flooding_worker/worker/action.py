@@ -7,7 +7,7 @@ import logging
 
 from pika import BasicProperties
 
-from brokerconfig import QUEUES
+from lizard_flooding_worker.worker.brokerconfig import QUEUES
 
 
 class Action(object):
@@ -56,3 +56,22 @@ class Action(object):
     def retrieve_queue_options(self, task_code):
         """Retrieves queue info from brokerconfig file."""
         return QUEUES[task_code]
+
+    def next_queues(self):
+        """
+        Recovers queues(s) of next task(s)
+        by increasing the sequence.
+        """
+        next_sequence = int(self.body["next_sequence"]) + 1
+        instruction = self.body["instruction"]
+        queues = []
+        for (queue_code, sequence) in instruction.iteritems():
+            if int(sequence) == next_sequence:
+                queues.append(queue_code)
+        return queues
+
+    def increase_sequence(self):
+        self.body["next_sequence"] = int(self.body["next_sequence"]) + 1
+
+    def set_current_task(self, queue):
+        self.body["curr_task_code"] = queue

@@ -1,22 +1,22 @@
 #!c:/python25/python.exe
 # -*- coding: utf-8 -*-
 #***********************************************************************
-#*   
+#*
 #***********************************************************************
 #*                      All rights reserved                           **
-#*   
-#*   
+#*
+#*
 #*                                                                    **
-#*   
-#*   
-#*   
+#*
+#*
+#*
 #***********************************************************************
 #* Library    : png_generation
 #* Purpose    : convert a set of asc files into png
 #* Function   : png_generation.sobek/his_ssm
-#*               
+#*
 #* Project    : J0005
-#*  
+#*
 #* $Id$
 #*
 #* initial programmer :  Mario Frasca
@@ -31,7 +31,15 @@ if sys.version_info < (2, 4):
 
 import logging
 
-log = logging.getLogger('nens.lizard.kadebreuk.uitvoerder') 
+log = logging.getLogger('nens.lizard.kadebreuk.uitvoerder')
+
+def set_broker_logging_handler(broker_handler=None):
+    """
+    """
+    if broker_handler is not None:
+        log.addHandler(broker_handler)
+    else:
+        log.warning("Broker logging handler does not set.")
 
 SOBEK_PROGRAM_ID = 1
 HISSSM_PROGRAM_ID = 2
@@ -39,11 +47,11 @@ IMPORT_PROGRAM_ID = 3
 
 if __name__ == '__main__':
     sys.path.append('..')
-    
+
     from django.core.management import setup_environ
     import lizard.settings
     setup_environ(lizard.settings)
-    
+
 from django.db import transaction
 import os, stat
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -57,14 +65,14 @@ def common_generation(connection, scenario_id, tmp_dir, source_programs):
     loop on all results computed for the given scenario_id, unpack
     them into a temporary directory, get the corresponding color
     mapping, convert to png, set in the results record the
-    resultpngloc field.  
+    resultpngloc field.
     """
     import zipfile, nens.asc
 
     scenario = Scenario.objects.get(pk=scenario_id)
     destination_dir = Setting.objects.get(key='DESTINATION_DIR').value
     source_dir = Setting.objects.get(key='SOURCE_DIR').value
-    
+
     log.debug("select results relative to scenario %i" % scenario_id)
     results = scenario.result_set.filter(resulttype__program__in=source_programs, resulttype__color_mapping_name__isnull=False)
 
@@ -82,21 +90,21 @@ def common_generation(connection, scenario_id, tmp_dir, source_programs):
     def_container = 'gridmaxwaterdepth.zip'
     def_name = 'dm1maxd0.asc'
     log.debug("use %s as default grid (default shape) from %s" % (def_name, def_container))
-    
+
     try:
         ref_result = scenario.result_set.filter(resulttype__id=1)[0].resultloc
         if os.stat(os.path.join(destination_dir, ref_result))[stat.ST_SIZE] == 0:
             log.warning("input file '%s' is empty" % ref_result)
         else:
             input_file = zipfile.ZipFile(os.path.join(destination_dir, ref_result))
-            def_grid = nens.asc.AscGrid(data=input_file, name=def_name)        
+            def_grid = nens.asc.AscGrid(data=input_file, name=def_name)
     except Scenario.DoesNotExist:
         log.warning("Reference grid does not exist")
 
     log.debug("starting the loop on all previously computed results")
     for result in results:
         log.debug("examining results record: '%s'" % str(result))
-        
+
         if os.stat(os.path.join(destination_dir, result.resultloc))[stat.ST_SIZE] == 0:
             log.warning("input file '%s' is empty" % result.resultloc)
             continue
@@ -111,12 +119,12 @@ def common_generation(connection, scenario_id, tmp_dir, source_programs):
             color_mapping_name = scenario.project.color_mapping_name
         else:
             color_mapping_name = result.resulttype.color_mapping_name
-        
-        log.info("copy colormappings from source '%s' into destination '%s' directory" % 
+
+        log.info("copy colormappings from source '%s' into destination '%s' directory" %
                   (cm_location, os.path.join(abs_output_dir_name, result.resulttype.name)))
 
 
-       
+
         cm_content = file(os.path.join(cm_location, color_mapping_name)).read()
 
         colormapping_abs = os.path.join(abs_output_dir_name, result.resulttype.name, 'colormapping.csv')
@@ -128,8 +136,8 @@ def common_generation(connection, scenario_id, tmp_dir, source_programs):
         if not os.path.isdir(os.path.join(tmp_dir, result.resulttype.name)):
             os.makedirs(os.path.join(tmp_dir, result.resulttype.name))
         else:
-            [os.unlink(os.path.join(tmp_dir, result.resulttype.name, name)) 
-             for name in os.listdir(os.path.join(tmp_dir, result.resulttype.name)) 
+            [os.unlink(os.path.join(tmp_dir, result.resulttype.name, name))
+             for name in os.listdir(os.path.join(tmp_dir, result.resulttype.name))
              if os.path.isfile(os.path.join(tmp_dir, result.resulttype.name, name))]
 
         log.debug("unpack all files into the temporary directory from file %s."%result.resultloc)
@@ -148,21 +156,21 @@ def common_generation(connection, scenario_id, tmp_dir, source_programs):
             temp.write(input_file.read())
             temp.close()
             input_file.close()
-            
+
 
         # invoke part that will generate the png(s) based on the asc/inc files.
         infile_asc = compute_png_files(result, abs_output_dir_name, os.path.join(tmp_dir, result.resulttype.name + '/'),
                                        def_grid, colormapping_abs)
 
         log.debug("empty temporary directory")
-        [os.unlink(os.path.join(tmp_dir, result.resulttype.name,  name)) 
-         for name in os.listdir(os.path.join(tmp_dir,result.resulttype.name)) 
+        [os.unlink(os.path.join(tmp_dir, result.resulttype.name,  name))
+         for name in os.listdir(os.path.join(tmp_dir,result.resulttype.name))
          if os.path.isfile(os.path.join(tmp_dir, result.resulttype.name, name))]
         log.debug("remove temporary directory")
         os.rmdir(os.path.join(tmp_dir, result.resulttype.name))
 
         result.resultpngloc =  os.path.join(rel_output_dir_name, result.resulttype.name, infile_asc + ".png")
-        
+
         result.save()
 
 
@@ -189,11 +197,11 @@ def compute_png_files(result, abs_output_dir_name, tmp_dir, def_grid, colormappi
 
     log.debug('look for files which match "%s"'%result.resulttype.content_names_re)
     accepted_files_re = re.compile(result.resulttype.content_names_re)
-        
+
     log.debug('files (candidates for match) are: %s'%str(candidates))
     input_files = [i for i in candidates if accepted_files_re.match(i)]
     log.debug("choose input for image production from %s." % input_files)
-    
+
     inc_files = [i for i in input_files if i.endswith('.inc')]
     if inc_files:
         log.debug("first candidate is a .inc file.")

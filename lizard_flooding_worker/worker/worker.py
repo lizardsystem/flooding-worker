@@ -9,14 +9,15 @@ log = logging.getLogger('lizard-flooding.worker')
 
 class Worker():
 
-    def __init__(self, connection, task_code, action):
+    def __init__(self, connection, task_code, action, worker_nr=1):
         self.connection = connection
         self.action = action
         self.task_code = task_code
+        self.worker_nr = worker_nr
 
     def run_worker(self):
         """
-        Runs common worker.
+        Runs common worker to perform flooding tasks.
         Task code equals to queue.
         """
         try:
@@ -26,4 +27,4 @@ class Worker():
                                   no_ack=False)
             channel.start_consuming()
         except AMQPChannelError as ex:
-            log.error(ex)
+            log.error("Worker_nr: %s error: %s" % (worker_nr, ex.message))

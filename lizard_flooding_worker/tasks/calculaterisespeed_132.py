@@ -46,7 +46,7 @@ import nens.asc
 
 if __name__ == '__main__':
     sys.path.append('..')
-    
+
     from django.core.management import setup_environ
     import lizard.settings
     setup_environ(lizard.settings)
@@ -57,11 +57,18 @@ from lizard.flooding.models import Scenario, Result, ResultType
 from lizard.base.models import Setting
 from numpy import nan
 
+def set_broker_logging_handler(broker_handler=None):
+    """
+    """
+    if broker_handler is not None:
+        log.addHandler(broker_handler)
+    else:
+        log.warning("Broker logging handler does not set.")
 
 def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
 
     import os
-    
+
     log.debug("step 0a: get a cursor from the database connection")
     curs = conn.cursor()
 
@@ -69,7 +76,7 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
     log.debug("0b1: scenario_id, region_id, breach_id")
     scenario = Scenario.objects.get(pk=scenario_id)
 
-    log.debug("0b2: destination_dir")    
+    log.debug("0b2: destination_dir")
     destination_dir = Setting.objects.get(key='DESTINATION_DIR').value
     output_dir_name = os.path.join(destination_dir, scenario.get_rel_destdir())
 
@@ -79,12 +86,12 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
         location += "/"
 
     log.debug("0f: restore the files from the database.")
-   
+
 
     for resulttype, names in [
             (15, ['fls_h.inc']),#"fls_import.zip"
             (18, ['fls_h.inc']),#"fls_import.zip"
-            (1, ['dm1maxd0.asc']),          
+            (1, ['dm1maxd0.asc']),
         ]:
         try:
             resultloc = scenario.result_set.get(resulttype=ResultType.objects.get(pk=resulttype)).resultloc
@@ -114,7 +121,7 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
             log.warning("input file '%s' is empty" % ref_result)
         else:
             input_file = ZipFile(os.path.join(destination_dir, ref_result))
-            def_grid = nens.asc.AscGrid(data=input_file, name=def_name)        
+            def_grid = nens.asc.AscGrid(data=input_file, name=def_name)
     except Scenario.DoesNotExist:
         log.warning("Reference grid does not exist")
 
@@ -122,19 +129,19 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
 
     input_name = "fls_h.inc"
 
-    first_timestamps_generator = nens.asc.AscGrid.xlistFromStream(os.path.join(location , input_name), just_count=True, 
+    first_timestamps_generator = nens.asc.AscGrid.xlistFromStream(os.path.join(location , input_name), just_count=True,
                                                                   default_grid=def_grid)
     first_timestamp, _ = first_timestamps_generator.next()
     second_timestamp, _ = first_timestamps_generator.next()
     delta_t = second_timestamp - first_timestamp
 
-    arrival, arrival_value = nens.asc.AscGrid.firstTimestampWithValue(os.path.join(location, input_name), 
+    arrival, arrival_value = nens.asc.AscGrid.firstTimestampWithValue(os.path.join(location, input_name),
                                                                       default_grid=def_grid)
     temp = file(os.path.join(location, 'grid_ta.asc'), 'wb')
     arrival.writeToStream(temp)
     temp.close()
 
-    deadly, deadly_value = nens.asc.AscGrid.firstTimestampWithValue(os.path.join(location, input_name), threshold=1.5, 
+    deadly, deadly_value = nens.asc.AscGrid.firstTimestampWithValue(os.path.join(location, input_name), threshold=1.5,
                                                                     default_grid=def_grid)
     temp = file(location + 'grid_td.asc', 'wb')
     deadly.writeToStream(temp)
@@ -149,15 +156,15 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
             return (x_value + 0.3) / delta_t
         else:
             return x_value / y_value
-   
+
     def speedFirstMetersFunctionLoop(x, y):
         result = x.copy()
-        
+
         for col in range(len(x)):
             for row in range(len(x[0])):
                 x_value = x[col][row]
                 y_value = y[col][row]
-                
+
                 try:
                     if y_value == 0:
                         result[col][row] = (x_value + 0.3) / delta_t
@@ -165,14 +172,14 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
                         result[col][row] = x_value / y_value
                 except TypeError:
                     pass
-        
+
         return result
 
     def fillInTheSpeedBlanks(speed, wet):
         "if water arrives but does not reach deadly level, return 0"
 
         result = speed.copy()
-        
+
         for col in range(len(speed)):
             for row in range(len(speed[0])):
                 speed_value = speed[col][row]
@@ -183,7 +190,7 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
                     else:
                         result[col][row] = speed_value
                 except TypeError:
-                    pass   
+                    pass
         return result
 
     speedFirstMeters = nens.asc.AscGrid.apply(speedFirstMetersFunctionLoop, value_difference, time_difference)
@@ -213,7 +220,7 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
                         result[col, row] = max(speed, result[col, row])
         return result
 
-    value_tsgrid = nens.asc.AscGrid.firstTimestamp(location + input_name, threshold=True, 
+    value_tsgrid = nens.asc.AscGrid.firstTimestamp(location + input_name, threshold=True,
                                                    default_grid=def_grid)
     maxWaterRaiseSpeed = computeMaxSpeed(value_tsgrid)
     temp = file(location + 'grid_ss.asc', 'wb')
@@ -229,18 +236,18 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
         ('.', 'grid_td.asc', 'gridtd.zip', 22, None, None), ]:
 
         resultloc = os.path.join(scenario.get_rel_destdir(), zipfilename)
-        
+
         content = file(os.path.join(location , dirname , filename), 'rb').read()
         output_file = ZipFile( os.path.join(destination_dir, resultloc), mode="w", compression=ZIP_DEFLATED)
         output_file.writestr(filename, content)
         output_file.close()
-        
+
         result, new = scenario.result_set.get_or_create(resulttype=ResultType.objects.get(pk=resulttype))
         result.resultloc =  resultloc
         result.unit = unit
         result.value = value
         result.save()
-        
+
     log.debug("tasks")
     return True
 
@@ -251,7 +258,7 @@ def main(options, args):
     log.setLevel(options.loglevel)
 
     from django.db import connection
-    
+
     perform_calculation(connection, 'c:\\temp' , options.scenario, options.year, options.timeout)
 
 

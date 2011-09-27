@@ -1,8 +1,8 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.txt.
 import logging
 from django.db import models
-from lizard_flooding.models import Scenario
-
+#from lizard_flooding.models import Scenario
+#from lizard_flooding.models import TaskType
 
 LOGGING_LEVELS = (
     (0, u'DEBUG'),
@@ -12,31 +12,17 @@ LOGGING_LEVELS = (
     (2, u'CRITICAL'),
 )
 
-PRIORITIES = (
-    (0, u'low'),
-    (1, u'high'),
-)
-
 
 logger = logging.getLogger(__name__)
 
 
-class Customer(models.Model):
-    name = models.CharField(max_length=30)
-    actief = models.BooleanField(default=True)
-
-    def __unicode__(self):
-        return self.name
-
-
 class Workflow(models.Model):
-    customer = models.ForeignKey(Customer)
-    scenario = models.ForeignKey(Scenario)
+    scenario = models.ForeignKey('lizard_flooding.Scenario')
     code = models.CharField(max_length=100)
-    start_time = models.DateTimeField(
+    tstart = models.DateTimeField(
         blank=True,
         null=True)
-    end_time = models.DateTimeField(
+    tfinished = models.DateTimeField(
         blank=True,
         null=True)
     logging_level = models.IntegerField(
@@ -44,12 +30,18 @@ class Workflow(models.Model):
         blank=True,
         null=True)
     priority = models.IntegerField(
-        choices=PRIORITIES,
         blank=True,
         null=True)
 
     def __unicode__(self):
         return self.code
+
+
+class WorkflowTemplate(models.Model):
+    code = models.IntegerField(max_length=30)
+
+    def __unicode__(self):
+        return str(self.code)
 
 
 class TaskType(models.Model):
@@ -59,25 +51,30 @@ class TaskType(models.Model):
         return self.name
 
 
+class WorkflowTemplateTask(models.Model):
+    code = models.ForeignKey(TaskType)
+    sequence = models.IntegerField()
+    workflow_template = models.ForeignKey(WorkflowTemplate)
+
+    def __unicode__(self):
+        return self.code.name
+
+
 class WorkflowTask(models.Model):
     workflow = models.ForeignKey(Workflow)
     code = models.ForeignKey(TaskType)
-    scenario = models.ForeignKey(Scenario)
     sequence = models.IntegerField()
     tstart = models.DateTimeField(blank=True, null=True)
     tfinished = models.DateTimeField(blank=True, null=True)
-    errorlog = models.TextField(blank=True, null=True)
     successful = models.NullBooleanField(blank = True, null=True)
 
     def __unicode__(self):
-        return self.code
+        return self.code.name
 
 
 class Logging(models.Model):
-    customer = models.ForeignKey(Customer)
     workflow = models.ForeignKey(Workflow)
     task = models.ForeignKey(WorkflowTask)
-    scenario = models.ForeignKey(Scenario)
     time = models.DateTimeField(
         blank=True,
         null=True)

@@ -5,7 +5,7 @@ from pika import BlockingConnection
 from pika import ConnectionParameters
 from pika import PlainCredentials
 
-from brokerconfig import CONNECT_SETTINGS
+from lizard_flooding_worker.worker.brokerconfig import CONNECT_SETTINGS
 
 import logging
 log = logging.getLogger('lizard-flooding.broker')
@@ -23,10 +23,13 @@ class BrokerConnection(object):
     def connect_to_broker(self):
         """Returns connection object,
         """
-        credentials = PlainCredentials(self.user, self.password)
-        parameters = ConnectionParameters(host=self.host,
-                                          port=self.port,
-                                          virtual_host=self.virtual_host,
-                                          credentials=credentials)
-        connection = BlockingConnection(parameters)
-        return connection
+        try:
+            credentials = PlainCredentials(self.user, self.password)
+            parameters = ConnectionParameters(host=self.host,
+                                              port=self.port,
+                                              virtual_host=self.virtual_host,
+                                              credentials=credentials)
+            connection = BlockingConnection(parameters)
+            return connection
+        except Exception as ex:
+            log.error("{0}".format(ex))

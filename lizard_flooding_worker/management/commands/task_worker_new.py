@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.txt.
 
+from optparse import make_option
+
 from django.core.management.base import BaseCommand
-from lizard_flooding_worker.client.worker.worker import Worker
-from lizard_flooding_worker.client.worker.action_task import ActionTask
-from lizard_flooding_worker.client.worker.broker_connection import BrokerConnection
-from lizard_flooding_worker.client.worker.message_logging_handler import AMQPMessageHandler
+from lizard_flooding_worker.worker.worker import Worker
+from lizard_flooding_worker.worker.action_task import ActionTask
+from lizard_flooding_worker.worker.broker_connection import BrokerConnection
+from lizard_flooding_worker.worker.message_logging_handler import AMQPMessageHandler
 
 import logging
 log = logging.getLogger("lizard-flooding.management.logging_worker")
@@ -16,24 +18,35 @@ class Command(BaseCommand):
     Run task worker. The worker listens to certain
     queue, retrieves  message, runs task, sends logging.
     """
-    def handle(self, *args, **options):
-        task_code = None
-        numeric_level = 10  # DEBUG
 
-        if len(args) > 0:
-            task_code = args[0]
-        else:
-            log.error("NOT STARTED - expects task_code as argument")
+    help = ("Example: bin/django task_worker_new "\
+            "--task_code 120 "\
+            "--log_level 50 "\
+            "--worker_nr 1")
+
+    option_list = BaseCommand.option_list + (
+        make_option('--task_code',
+                    help='tasks that worker must perform',
+                    type='str'),
+        make_option('--log_level',
+                    help='logging level',
+                    type='str',
+                    default='DEBUG'),
+        make_option('--worker_nr',
+                    help='use this if you need more than one uitvoerder on this workstation',
+                    type='int',
+                    default=1))
+
+    def handle(self, *args, **options):
+
+        if not options["task_code"]:
+            log.error("Expected a task_code argument, use --help.")
             return
 
-
-        if len(args) > 1:
-            numeric_level = getattr(logging, args[1], None)
-            if not isinstance(numeric_level, int):
-                raise ValueError("Invalid log level: %s" % args[1])
-            log.info("Worker wil start in %s mode." % args[1])
-        else:
-            log.info("Worker wil start in DEBUG mode.")
+        numeric_level = getattr(logging, options["log_level"].upper(), None)
+        if not isinstance(numeric_level, int):
+            log.error("Invalid log level: %s" % options["log_level"])
+            numeric_level = 10
 
         broker = BrokerConnection()
         connection = broker.connect_to_broker()
@@ -41,13 +54,18 @@ class Command(BaseCommand):
         if connection is None:
             log.error("Could not connect to broker.")
             return
-        # creates action object
-        action = ActionTask(connection, task_code)
-        # sets broker logging handler to action object
+
+        action = ActionTask(connection,
+                            options["task_code"],
+                            options["worker_nr"])
+
         logging.handlers.AMQPMessageHandler = AMQPMessageHandler
-        broker_handler = logging.handlers.AMQPMessageHandler(action)
-        broker_handler.setLevel(numeric_level)
-        action.set_broker_logging_handler(broker_handler)
-        # creates and runs worker
-        task_worker = Worker(connection, task_code, action)
+        broker_logging_handler = logging.handlers.AMQPMessageHandler(action,
+                                                                     numeric_level)
+        action.set_broker_logging_handler(broker_logging_handler)
+
+        task_worker = Worker(connection,
+                             options["task_code"],
+                             action,
+                             options["worker_nr"])
         task_worker.run_worker()

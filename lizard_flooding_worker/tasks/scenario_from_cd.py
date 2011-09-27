@@ -1,24 +1,24 @@
 #!c:/python25/python.exe
 # -*- coding: utf-8 -*-
 #***********************************************************************
-#* 
+#*
 #***********************************************************************
 #*                      All rights reserved                           **
-#* 
-#* 
+#*
+#*
 #*                                                                    **
-#* 
-#* 
-#* 
+#*
+#*
+#*
 #***********************************************************************
 #* Purpose    : prepare asc files for png generation
 #* Function   : main
 #* Usage      : ./scenario_from_cd.py --help
-#* 
+#*
 #* Project    : J0005
-#* 
+#*
 #* $Id$
-#* 
+#*
 #* initial programmer :  Mario Frasca
 #* initial date       :  20080912
 #**********************************************************************
@@ -42,6 +42,15 @@ from nens import sobek, asc
 from zipfile import ZipFile, ZIP_DEFLATED
 
 log = logging.getLogger('nens.lizardkadebreuk.scenario_from_cd')
+
+def set_broker_logging_handler(broker_handler=None):
+    """
+    """
+    if broker_handler is not None:
+        log.addHandler(broker_handler)
+    else:
+        log.warning("Broker logging handler does not set.")
+
 
 class Task:
     def __init__(self, conn, scenario_id):
@@ -77,28 +86,28 @@ def get_scenarios_from_sheet(sheet):
 
     log.debug("get_scenarios_from_sheet entering")
     base=0
-    while not sheet.cell_value(rowx=base,colx=0): 
+    while not sheet.cell_value(rowx=base,colx=0):
         log.debug("skipping row %d" % base)
         base+=1
 
     log.debug("sheet starts with %s information rows, before the header row"
               % base)
- 
+
     ncols = 0
     try:
-        while sheet.cell_value(rowx=base, colx=ncols+1): 
+        while sheet.cell_value(rowx=base, colx=ncols+1):
             log.debug("there are at least %d columns" % ncols)
             ncols+=1
     except IndexError:
         ncols += 1 # there is some confusion about 1 or 0 based...
         log.debug("hit the right margin of the spreadsheet after column %d" % ncols)
         pass
- 
+
     log.debug("for all we need, there are %s entries in the header"
               % ncols)
 
     fields = [sheet.cell_value(base, col).lower() for col in range(ncols)]
-    result = [integer_or_None(dict(zip(fields, 
+    result = [integer_or_None(dict(zip(fields,
                                        [(sheet.cell_value(row, col) or None) for col in range(ncols)])),
                               ['regiongroup_id', 'region_id', 'breach_id', 'project_id', 'scenario_id'])
               for row in range(base+1, sheet.nrows)]
@@ -169,7 +178,7 @@ def validate_database_object(conn, table, obj):
     """syncronize obj with database
 
     fills in the blanks in either obj variable and/or objs
-    database table.  
+    database table.
 
     the object in the database is identified by the 'id' or
     differelty, depending on whether it's a region, a breach or a
@@ -201,7 +210,7 @@ def validate_database_object(conn, table, obj):
         curs = conn.cursor()
         execute(curs, "SELECT * FROM "+table+" WHERE id=%(id)s", obj)
         obj.update(dict_from_cursor(curs, null_fields))
-        
+
     elif table == 'regions':
         raise ValueError(table+" object '%s' does not have an 'id'" % obj)
     elif obj.get('name') is None:
@@ -215,7 +224,7 @@ def validate_database_object(conn, table, obj):
         elif table == 'breaches':
             where_clause += ' AND region_fk=%(region_fk)s'
             where_explain += ' and region_fk'
-        
+
         log.debug("find %s object by %s in database" % (table, where_explain))
         curs = conn.cursor()
         execute(curs, "SELECT id FROM "+table+" WHERE "+where_clause, obj)
@@ -231,7 +240,7 @@ def validate_database_object(conn, table, obj):
         set_clauses = " ".join(["SET %s=%%(%s)s" % (key, key) for key in fields_to_be_defined])
         updq = "UPDATE "+table+" "+set_clauses+" WHERE id=%(id)s"
         execute(curs, updq, obj)
-    
+
     log.debug("validate %s database object %s - returning" % (table, obj))
     return obj
 
@@ -260,7 +269,7 @@ def xls_row_decoder(conn, item):
 
     breach.update(dict((k.split('.')[-1], v) for k, v in item.items() if k.startswith('db.breaches.')))
     breach = validate_database_object(conn, "breaches", breach)
-    
+
     if breach['id'] != item['breach_id']:
         log.debug('validating the breach updated its id: we are dealing with a new breach and we must update its geom')
 
@@ -269,8 +278,8 @@ def xls_row_decoder(conn, item):
         breach['y'] = item['y']
         curs = conn.cursor()
 
-        execute(curs, """UPDATE breaches 
-                     SET geom=Transform(GeomFromEWKT('SRID=28992;POINT(%(x)s %(y)s)'),4326) 
+        execute(curs, """UPDATE breaches
+                     SET geom=Transform(GeomFromEWKT('SRID=28992;POINT(%(x)s %(y)s)'),4326)
                      WHERE id=%(id)s""",
                 breach)
 
@@ -305,7 +314,7 @@ def translate_inc_files(conn, item):
                                                    (18, 'filenaam', 'fls_h.inc'),
                                                    ]:
         if not (item[field_name] == '' or  item[field_name] == None):
-        
+
             item['resulttype_id'] = resulttype_id
             log.info("for scenario %(scenario_id)s: doing result of type %(resulttype_id)s" % item)
             curs = conn.cursor()
@@ -323,13 +332,13 @@ def translate_inc_files(conn, item):
                 log.debug("already there")
 
             log.debug("opening destination zip file '%s'" % (output_dir_base + row['zipfile']))
-            dest = ZipFile(output_dir_base + row['zipfile'], mode="w", compression=ZIP_DEFLATED) 
+            dest = ZipFile(output_dir_base + row['zipfile'], mode="w", compression=ZIP_DEFLATED)
 
             if resulttype_id == 18:
                 filename = pattern % item
                 log.debug("store inc file '%s'" % filename)
 
-                log.debug("writing item " + output_name + " to zipfile") 
+                log.debug("writing item " + output_name + " to zipfile")
                 content = file(filename).read()
                 dest.writestr(output_name, content)
 
@@ -344,7 +353,7 @@ def translate_inc_files(conn, item):
                 src = asc.AscGrid(pattern % item)
                 src.writeToStream(dest, output_name)
                 row['deltat'] = row['file_base'] = row['file_count'] = None
-                
+
             dest.close()
             item['results'].append(row)
 
@@ -373,14 +382,14 @@ def store_results_in_database(conn, item):
                    'max_nr': row['file_count'],
                    'deltat': row['deltat'],
                    }
-        execute(curs, """DELETE from results  
+        execute(curs, """DELETE from results
                         WHERE scenario_fk = %(scenario_id)s
-                          AND resulttype_fk = %(resulttype_id)s 
+                          AND resulttype_fk = %(resulttype_id)s
                         """, qparams)
-        execute(curs, """INSERT INTO results 
-                        (scenario_fk, resulttype_fk, resultloc, firstnr, lastnr, deltat) 
-                        VALUES 
-                        (%(scenario_id)s, %(resulttype_id)s, %(resultloc)s, %(min_nr)s, %(max_nr)s, %(deltat)s) 
+        execute(curs, """INSERT INTO results
+                        (scenario_fk, resulttype_fk, resultloc, firstnr, lastnr, deltat)
+                        VALUES
+                        (%(scenario_id)s, %(resulttype_id)s, %(resultloc)s, %(min_nr)s, %(max_nr)s, %(deltat)s)
                         """, qparams)
 
     conn.commit()
@@ -394,7 +403,7 @@ def main(options, args):
     # # useful for testing...
     # connect_string='dbname=lizardkbsp user=lizardkadebreuk password=lizardkadebreuk host=192.168.0.168 port=5432'
     conn = psycopg2.connect(connect_string)
-    
+
     import zipfile
     if options.already_unpacked:
         log.info("assume the zipfile has already been unzipped into directory '%s'" % options.basedir)
@@ -429,12 +438,12 @@ def main(options, args):
     if options.unpack_and_stop:
         log.info("finished unpacking and requested not to do more")
         return
-    
+
     log.debug("find the xls workbook in the DATA directory")
     found = None
     for root, _, names in os.walk(options.basedir + "HIS Scenarioviewer/"):
         for name in names:
-            if name.endswith('.xls'): 
+            if name.endswith('.xls'):
                 found=(root, name)
             if found: break
         if found: break
@@ -446,7 +455,7 @@ def main(options, args):
     import xlrd
     wb = xlrd.open_workbook(filename)
     sheet = wb.sheet_by_name('DATA')
-    log.debug("found DATA sheet at index %s.  size:(cols:%s, rows:%s)" 
+    log.debug("found DATA sheet at index %s.  size:(cols:%s, rows:%s)"
               % (sheet.number, sheet.ncols, sheet.nrows))
 
     project = get_project_from_sheet(sheet)
@@ -471,7 +480,7 @@ def main(options, args):
         task.close()
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',) 
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
 
     try:
         import psyco

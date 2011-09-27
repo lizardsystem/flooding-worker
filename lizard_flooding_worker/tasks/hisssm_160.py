@@ -36,12 +36,20 @@
 __revision__ = "$Rev$"[6:-2]
 
 import logging, os, subprocess
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',) 
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
 log = logging.getLogger('nens')
+
+def set_broker_logging_handler(broker_handler=None):
+    """
+    """
+    if broker_handler is not None:
+        log.addHandler(broker_handler)
+    else:
+        log.warning("Broker logging handler does not set.")
 
 if __name__ == '__main__':
     sys.path.append('..')
-    
+
     from django.core.management import setup_environ
     import lizard.settings
     setup_environ(lizard.settings)
@@ -95,7 +103,7 @@ def find_first(basedir='.', startswith='', endswith=''):
     """returns the first matching file
     """
 
-    candidates = [i for i in os.listdir(basedir) 
+    candidates = [i for i in os.listdir(basedir)
                   if i.lower().startswith(startswith) and i.lower().endswith(endswith)]
     if len(candidates) != 1:
         log.warn('more than one candidate %s*%s in %s directory!' % (startswith, endswith, basedir, ))
@@ -103,11 +111,11 @@ def find_first(basedir='.', startswith='', endswith=''):
     return candidates[0]
 
 def perform_HISSSM_calculation(conn, tmp_location, scenario_id, year, timeout=0):
-    
+
     log.debug("step 0a: get settings")
     scenario = Scenario.objects.get(pk=scenario_id)
     destination_dir = Setting.objects.get(key='DESTINATION_DIR').value
- 
+
     log.debug("step 0c: get temp location: resetting to forward-slash")
     location = tmp_location.replace("\\", "/")
     if not location.endswith("/"):
@@ -180,7 +188,7 @@ def perform_HISSSM_calculation(conn, tmp_location, scenario_id, year, timeout=0)
     child = subprocess.Popen(command_line)
     log.debug("starting to wait for completion of subprocess")
     child.wait()
-    
+
     log.debug("step 4: retrieve the data from the files")
     temp = file(os.path.join(location, 'demo/scenario1/results/txt', kenmerk + '.csv'))
     for line in temp.readlines():
@@ -194,18 +202,18 @@ def perform_HISSSM_calculation(conn, tmp_location, scenario_id, year, timeout=0)
 
     log.debug("step 5: store the output files and the fact that they exist")
 
-    for dirname, filename, zipfilename, resulttype, unit, value in [ 
-        ('grids', 'slachtoffers-lizard_flooding.asc', 'gridcasualties.zip', 7, 'Pers', casualties), 
-        ('grids', 'schade-lizard_flooding.asc', 'griddamage.zip', 8, 'Euro', monetary), 
+    for dirname, filename, zipfilename, resulttype, unit, value in [
+        ('grids', 'slachtoffers-lizard_flooding.asc', 'gridcasualties.zip', 7, 'Pers', casualties),
+        ('grids', 'schade-lizard_flooding.asc', 'griddamage.zip', 8, 'Euro', monetary),
         ('txt', 'lizard_flooding.csv', 'his-ssm-out.zip', 9, 'Pers', inhabitants)]:
-        
+
         resultloc = os.path.join(scenario.get_rel_destdir(), zipfilename)
-        
+
         content = file(os.path.join(location , 'demo/scenario1/results', dirname , filename), 'rb').read()
         output_file = ZipFile( os.path.join(destination_dir, resultloc), mode="w", compression=ZIP_DEFLATED)
         output_file.writestr(filename, content)
         output_file.close()
-        
+
         result, new = scenario.result_set.get_or_create(resulttype=ResultType.objects.get(pk=resulttype))
         result.resultloc =  resultloc
         result.unit = unit
@@ -221,7 +229,7 @@ def main(options, args):
     log.setLevel(options.loglevel)
 
     from django.db import connection
-    
+
     perform_HISSSM_calculation(connection, options.hisssm_location, options.scenario, options.year, options.timeout)
 
 

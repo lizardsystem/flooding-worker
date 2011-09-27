@@ -7,13 +7,21 @@ __revision__ = "$Rev: 9979 $"[6:-2]
 import logging
 log = logging.getLogger('nens.lizard.kadebreuk.lognormal')
 
+def set_broker_logging_handler(broker_handler=None):
+    """
+    """
+    if broker_handler is not None:
+        log.addHandler(broker_handler)
+    else:
+        log.warning("Broker logging handler does not set.")
+
 from nens.numeric import norm_cdf
 import math
 from nens.asc import AscGrid
 
 if __name__ == '__main__':
     sys.path.append('..')
-    
+
     from django.core.management import setup_environ
     import lizard.settings
     setup_environ(lizard.settings)
@@ -23,7 +31,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from lizard.flooding.models import Scenario, Result, ResultType
 from lizard.base.models import Setting
 import os
-    
+
 def oolognormdist(x, m, s):
     """same as openoffice LOGNORMDIST
     """
@@ -53,7 +61,7 @@ def combine(w, x, m1, s1, m2, s2, lower, upper):
         return 0
 
     if not w > 0:
-        return 0    
+        return 0
 
     if w < upper:
         oolower = oolognormdist(x, m1, s1)
@@ -64,7 +72,7 @@ def combine(w, x, m1, s1, m2, s2, lower, upper):
         if w >= upper:
             return ooupper
     fraction = (upper - w) / (upper - lower)
-    
+
     return fraction * oolower + (1.0-fraction) * ooupper
 
 def calc_mortality_grid(stijg,depth):
@@ -78,8 +86,8 @@ def calc_mortality_grid(stijg,depth):
                 result[col][row] = combine(stijg_value, depth_value, 7.6, 2.75, 1.46, 0.28, 0.5, 4.0)
             except TypeError:
                 result[col][row] = 0
-                pass   
-    return result    
+                pass
+    return result
 
 
 def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
@@ -114,7 +122,7 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
         except Result.DoesNotExist, e:
             log.error('inputfile of resulttype %i not found'%resulttype)
             return False
-    
+
     log.debug("step 3: use the fls_h.inc (sequence of water levels) into grid_dh.asc (maximum water raise speed)")
 
     grid_dh = AscGrid(file(os.path.join(location, 'grid_dh.asc')))
@@ -130,20 +138,20 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
 
     for dirname, filename, zipfilename, resulttype, unit, value in [
         ('.', 'mortality.asc', 'gridmortality.zip', 20, None, None), ]:
-        
+
         resultloc = os.path.join(scenario.get_rel_destdir(), zipfilename)
-        
+
         content = file(os.path.join(location , dirname , filename), 'rb').read()
         output_file = ZipFile( os.path.join(destination_dir, resultloc), mode="w", compression=ZIP_DEFLATED)
         output_file.writestr(filename, content)
         output_file.close()
-        
+
         result, new = scenario.result_set.get_or_create(resulttype=ResultType.objects.get(pk=resulttype))
         result.resultloc =  resultloc
         result.unit = unit
         result.value = value
         result.save()
-    
+
     log.debug("finish task")
     return True
 

@@ -1,23 +1,23 @@
 #!c:/python25/python.exe
 # -*- coding: utf-8 -*-
 #***********************************************************************
-#*   
+#*
 #***********************************************************************
 #*                      All rights reserved                           **
-#*   
-#*   
+#*
+#*
 #*                                                                    **
-#*   
-#*   
-#*   
+#*
+#*
+#*
 #***********************************************************************
 #* Library    : <if this is a module, what is its name>
 #* Purpose    : task 130: spawn and watch sobek.simulate.
 #* Function   : main
 #* Usage      : spawnsobek.py --help
-#*               
+#*
 #* Project    : J0005
-#*  
+#*
 #* $Id$
 #*
 #* $Name:  $
@@ -33,12 +33,12 @@ times out.  please refer to LizardKadebreukRekencentrumSobekUitvoeren
 for more details.
 """
 import logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',) 
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
 log = logging.getLogger('nens')
 
 if __name__ == '__main__':
     sys.path.append('..')
-    
+
     from django.core.management import setup_environ
     import lizard.settings
     setup_environ(lizard.settings)
@@ -109,7 +109,7 @@ terminating the subprocess when the computation is completed.
 
             # test the status code on the first line
             result_code = int(text[0])
-            if result_code != 51: 
+            if result_code != 51:
                 warming_up = 0
             if result_code == 51 and warming_up:
                 raise Exception("still warming up")
@@ -139,7 +139,7 @@ terminating the subprocess when the computation is completed.
         # high sleep time will slow down exiting on completion
         log.debug('watchdog is about to go to sleep again')
         time.sleep(1)
-        if child.poll() is not None: 
+        if child.poll() is not None:
             log.debug('watchdog thinks child already died')
             return
 
@@ -155,19 +155,26 @@ def alarm_handler(timeout, child):
     while count < timeout:
         time.sleep(1)
         count += 1
-        if child.poll() is not None: 
+        if child.poll() is not None:
             log.debug('alarm_handler thinks child already died')
             return
     log.debug("alarm_handler is about to kill the child")
     kill(child.pid)
-    
+
+def set_broker_logging_handler(broker_handler=None):
+    """
+    """
+    if broker_handler is not None:
+        log.addHandler(broker_handler)
+    else:
+        log.warning("Broker logging handler does not set.")
 
 def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='lizardkb'):
     """task 130: perform_sobek_simulation
     """
 
     log.debug("step 0a: get settings")
-    
+
     scenario = Scenario.objects.get(pk=scenario_id)
 
     sobek_location = default_sobek_locations[scenario.sobekmodel_inundation.sobekversion.name[:5]]
@@ -252,10 +259,10 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
     min_file_nr = {}
     resulttypes = ResultType.objects.filter(program=1)
     import re
-    matcher_destination = [(r.id, re.compile(r.content_names_re, re.I), 
-                            ZipFile(os.path.join(output_dir_name, r.name + '.zip'), 
-                                    mode="w", compression=ZIP_DEFLATED), 
-                            r.name) 
+    matcher_destination = [(r.id, re.compile(r.content_names_re, re.I),
+                            ZipFile(os.path.join(output_dir_name, r.name + '.zip'),
+                                    mode="w", compression=ZIP_DEFLATED),
+                            r.name)
                            for r in resulttypes if r.content_names_re is not None]
 
     # check the result of the execution
@@ -281,7 +288,7 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
     log.debug("close all destination zip files")
     for _, _, dest, _ in matcher_destination:
         dest.close()
-        
+
     log.debug("adding to the database what results have been computed...")
     for resulttype_id, _, _, name in matcher_destination:
         # table results
@@ -289,8 +296,8 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
         result.resultloc =  os.path.join(scenario.get_rel_destdir(), name + '.zip')
         result.firstnr = min_file_nr.get(resulttype_id)
         result.lastnr = max_file_nr.get(resulttype_id)
-        result.save() 
-        
+        result.save()
+
 
     log.info("saved %d files" % saved)
 
@@ -302,7 +309,7 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
         remarks = ' 51\nerror reading output file'
 
     remarks = 'rev: ' + __revision__ + "\n" + remarks
-    
+
     try:
         task = Task.objects.get(pk=task_id)
         task.remarks = remarks
@@ -320,15 +327,15 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
 def main(options, args):
     """translates options to connection + scenario_id, then calls perform_sobek_simulation
     """
-    
+
     log.setLevel(options.loglevel)
 
     from django.db import connection
-    
+
     # the following will not work as the amount of parameters is not
     # correct.  but I do not know where to get the task_id from so I
     # will leave it as it is: not working...
-    perform_sobek_simulation(connection, options.scenario, options.timeout) 
+    perform_sobek_simulation(connection, options.scenario, options.timeout)
 
 if __name__ == '__main__':
 

@@ -4,12 +4,12 @@
 import simplejson
 from datetime import datetime
 
-from lizard_flooding_worker.models import Customer
 from lizard_flooding_worker.models import Workflow
-from lizard_flooding_worker.models import Task
+from lizard_flooding_worker.models import WorkflowTask
+from lizard_flooding_worker.models import TaskType
 from lizard_flooding_worker.models import Logging
 
-from action import Action
+from lizard_flooding_worker.worker.action import Action
 
 import logging
 log = logging.getLogger('lizard-flooding.action_logging')
@@ -21,19 +21,20 @@ class ActionLogging(Action):
         """
         Inserts logging data into database.
         Used by logging_worker.
+        Cuts message to max. 200 chars.
         """
         body_dict = simplejson.loads(body)
+        task_code = body_dict["curr_task_code"]
+        task_id = body_dict["workflow_tasks"][task_code]
+        message = body_dict["message"][:200]
         try:
             new_logging = Logging(
-                customer=body_dict["customer_id"],
-                workflow=body_dict["workflow_id"],
-                task=Task.objects.all().filter(
-                    workflow=body_dict["workflow_id"]).filter(
-                    code=body_dict["curr_task_code"])[0],
-                    time=datetime.utcfromtimestamp(body_dict["event_time"]),
+                workflow_id=body_dict["workflow_id"],
+                task = WorkflowTask(pk=task_id),
+                time=datetime.utcfromtimestamp(body_dict["event_time"]),
                 level=body_dict["curr_log_level"],
-                message=body_dict["message"])
+                message=message)
             new_logging.save()
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as ex:
-            log.error("Could not write logging message into database: %s" % ex)
+            log.error("{0}".format(ex))
