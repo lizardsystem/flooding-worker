@@ -40,6 +40,8 @@ def perform_task(scenario_id, tasktype_id, worker_nr, broker_logging_handler=Non
 
     tmp_directory = os.path.join(tmp_root, str(worker_nr))
     sobek_project_directory = os.path.join(sobek_project_root, 'lzfl_%03d'%worker_nr)
+    print sobek_project_directory
+    print worker_nr
     #settings van flooding
     max_hours = 72
 

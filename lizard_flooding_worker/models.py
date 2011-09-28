@@ -54,6 +54,8 @@ class TaskType(models.Model):
 class WorkflowTemplateTask(models.Model):
     code = models.ForeignKey(TaskType)
     sequence = models.IntegerField()
+    max_failures = models.IntegerField(default=0)
+    max_duration_minutes = models.IntegerField(default=0)
     workflow_template = models.ForeignKey(WorkflowTemplate)
 
     def __unicode__(self):
@@ -64,6 +66,8 @@ class WorkflowTask(models.Model):
     workflow = models.ForeignKey(Workflow)
     code = models.ForeignKey(TaskType)
     sequence = models.IntegerField()
+    max_failures = models.IntegerField(default=0)
+    max_duration_minutes = models.IntegerField(default=0)
     tstart = models.DateTimeField(blank=True, null=True)
     tfinished = models.DateTimeField(blank=True, null=True)
     successful = models.NullBooleanField(blank = True, null=True)

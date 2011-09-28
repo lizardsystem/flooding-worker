@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """
-        Opens connaction to broker.
+        Opens connection to broker.
         Creates ActionWorkflow object.
         Creates logging handler to send loggings to broker.
         Sets logging handler to ActionWorkflow object.
@@ -54,4 +54,6 @@ class Command(BaseCommand):
 
         action.set_broker_logging_handler(broker_handler)
         action.perform_workflow()
-        connection.close()
+
+        if connection.is_open:
+            connection.close()

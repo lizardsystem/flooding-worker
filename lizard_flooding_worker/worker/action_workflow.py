@@ -51,7 +51,9 @@ class ActionWorkflow(Action):
             for template_task in template_tasks:
                 task = WorkflowTask(workflow=self.workflow,
                                     code=template_task.code,
-                                    sequence=template_task.sequence)
+                                    sequence=template_task.sequence,
+                                    max_failures=template_task.max_failures,
+                                    max_duration_minutes=template_task.max_duration_minutes)
                 task.save()
                 self.bulk_tasks.append(task)
         except Exception as ex:
@@ -66,16 +68,19 @@ class ActionWorkflow(Action):
         option = {}
         instruction = {}
         workflow_tasks = {}
+        task_failures = {}
 
         for task in self.bulk_tasks:
             if task.sequence == 0:
                 option["curr_task_code"] = task.code.name
             instruction[task.code.name] = task.sequence
             workflow_tasks[task.code.name] = task.id
+            task_failures[task.code.name] = task.max_failures
 
         option["instruction"] = instruction
         option["workflow_tasks"] = workflow_tasks
-        option["customer_id"] = ""
+        option["max_failures"] = task_failures
+        option["max_failures_tmp"] = task_failures
         if self.workflow:
             option["workflow_id"] = self.workflow.id
         option["scenario_id"] = self.scenario_id
@@ -88,7 +93,7 @@ class ActionWorkflow(Action):
 
     def start_workflow(self):
         """Sends trigger and logging messages to broker."""
-        channel = self.connection.channel()
+        self.channel = self.connection.channel()
         self.log.info("Start workflow")
 
         queues = self.next_queues()
@@ -98,4 +103,3 @@ class ActionWorkflow(Action):
             self.send_trigger_message(self.body,
                                  "Message emitted to queue %s" % queue,
                                  queue)
-        #self.connection.close()

@@ -19,19 +19,48 @@ class ActionTask(Action):
         self.log = logging.getLogger('lizard-flooding.action.task')
 
     def callback(self, ch, method, properties, body):
-        """sends logging to logging queue"""
+        """
+        Sets channel as class variable.
+        Runs a task.
+        Sends message to next queue, back to the same queueu or
+        to queue with failed tasks depended on task result.
+        """
+        result_status = None
+        self.channel = ch
         self.body = simplejson.loads(body)
         self.log.info("Start task")
         try:
-            perform_task(self.body["scenario_id"],
-                         int(self.task_code),
-                         self.worker_nr,
-                         self.broker_logging_handler)
+            result_status = perform_task(self.body["scenario_id"],
+                                      int(self.task_code),
+                                      self.worker_nr,
+                                      self.broker_logging_handler)
         except Exception as ex:
             self.log.error("{0}".format(ex))
-            return
+            result_status = False
 
         self.log.info("End task")
+
+        if self.status_task(result_status):
+            self.proceed_next_trigger()
+        else:
+            self.requeue_failed_message(ch, method, properties)
+        ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
+
+    def status_task(self, status = None):
+        """
+        Returns boolean.
+        """
+        if not status:
+            return False
+        if type(status).__name__ == 'boolean':
+            return status
+        if type(status).__name__ == 'tuple':
+            return status[0]
+
+    def proceed_next_trigger(self):
+        """
+        Sends triggers to next queue(s).
+        """
         queues = self.next_queues()
         self.increase_sequence()
         for queue in queues:
@@ -39,4 +68,36 @@ class ActionTask(Action):
             self.send_trigger_message(self.body,
                                  "Message emitted to queue %s" % queue,
                                  queue)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    def decrease_failures(self):
+        try:
+            failures = int(self.body["max_failures_tmp"][self.task_code])
+            self.body["max_failures_tmp"][self.task_code] = failures - 1
+        except Exception as ex:
+            self.log.error("{0}".format(ex))
+
+    def requeue_failed_message(self, ch, method, properties):
+        """
+        Sends message back to the origin queue or
+        to the failed queue.
+        """
+        self.decrease_failures()
+        print "-----------------------------"
+        print int(self.body["max_failures_tmp"][self.task_code])
+        if int(self.body["max_failures_tmp"][self.task_code]) >= 0:
+            ch.basic_publish(exchange=method.exchange,
+                             routing_key=method.routing_key,
+                             body=simplejson.dumps(self.body),
+                             properties=properties)
+            self.log.info("Task requeued due failure.")
+        else:
+            self.body["max_failures_tmp"][self.task_code] = self.body["max_failures"][self.task_code]
+            ch.basic_publish(exchange="failed",
+                             routing_key="failed",
+                             body=simplejson.dumps(self.body),
+                             properties=properties)
+            self.log.info("Task moved to failed queue due failure.")
+
+
+
+

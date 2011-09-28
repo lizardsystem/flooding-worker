@@ -16,23 +16,20 @@ class Action(object):
         self.log = logging.getLogger("lizard-flooding.action")
         self.body = None
         self.broker_logging_handler = None
+        self.channel = None
 
     def callback(self, ch, method, properties, body):
         """worker callback function"""
         raise NotImplementedError("Should have implemented this")
 
     def send_logging_message(self, message, log_level="0"):
-        channel = self.connection.channel()
         self.set_logging_to_body(message, log_level)
         queue_options = self.retrieve_queue_options("logging")
-        self.publish_message(channel, queue_options, self.body)
-        #self.connection.close()
+        self.publish_message(self.channel, queue_options, self.body)
 
     def send_trigger_message(self, body, message, queue):
-        channel = self.connection.channel()
         queue_options = self.retrieve_queue_options(queue)
-        self.publish_message(channel, queue_options, body)
-        #self.connection.close()
+        self.publish_message(self.channel, queue_options, body)
 
     def publish_message(self, channel, queue_options, body, properties=None):
         """Sends a message to broker. """
