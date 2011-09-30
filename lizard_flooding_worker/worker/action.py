@@ -5,8 +5,6 @@ import time
 import simplejson
 import logging
 
-from pika import BasicProperties
-
 from lizard_flooding_worker.worker.brokerconfig import QUEUES
 
 
@@ -17,6 +15,7 @@ class Action(object):
         self.body = None
         self.broker_logging_handler = None
         self.channel = None
+        self.properties = None
 
     def callback(self, ch, method, properties, body):
         """worker callback function"""
@@ -31,14 +30,12 @@ class Action(object):
         queue_options = self.retrieve_queue_options(queue)
         self.publish_message(self.channel, queue_options, body)
 
-    def publish_message(self, channel, queue_options, body, properties=None):
+    def publish_message(self, channel, queue_options, body):
         """Sends a message to broker. """
-        properties = BasicProperties(content_type="application/json",
-                                     delivery_mode=2)
         channel.basic_publish(exchange=queue_options["exchange"],
                               routing_key=queue_options["binding_key"],
                               body=simplejson.dumps(body),
-                              properties=properties)
+                              properties=self.properties)
 
     def set_broker_logging_handler(self, handler):
         self.broker_logging_handler = handler

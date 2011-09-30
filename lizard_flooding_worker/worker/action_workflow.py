@@ -8,6 +8,9 @@ from lizard_flooding_worker.models import WorkflowTemplateTask
 from lizard_flooding_worker.worker.action import Action
 from lizard_flooding.models import Scenario
 
+from pika import BasicProperties
+
+import time
 import logging
 
 
@@ -20,6 +23,7 @@ class ActionWorkflow(Action):
         self.body = {}
         self.workflow = None
         self.bulk_tasks = []
+        self.channel = self.connection.channel()
 
     def callback(self, ch, method, properties, body):
         pass
@@ -32,6 +36,7 @@ class ActionWorkflow(Action):
         """
         self.create_workflow()
         self.body = self.retrieve_workflow_options()
+        self.set_message_properties()
         self.start_workflow()
 
 
@@ -83,8 +88,8 @@ class ActionWorkflow(Action):
         option["max_failures_tmp"] = task_failures
         if self.workflow:
             option["workflow_id"] = self.workflow.id
+            option["priority"] = self.workflow.priority
         option["scenario_id"] = self.scenario_id
-        option["priority"] = ""
         option["curr_log_level"] = ""
         option["message"] = ""
         option["event_time"] = ""
@@ -93,7 +98,6 @@ class ActionWorkflow(Action):
 
     def start_workflow(self):
         """Sends trigger and logging messages to broker."""
-        self.channel = self.connection.channel()
         self.log.info("Start workflow")
 
         queues = self.next_queues()
@@ -103,3 +107,11 @@ class ActionWorkflow(Action):
             self.send_trigger_message(self.body,
                                  "Message emitted to queue %s" % queue,
                                  queue)
+
+    def set_message_properties(self):
+        print type(self.workflow.id)
+        self.properties = BasicProperties(content_type="application/json",
+                                          delivery_mode=2,
+                                          priority=self.workflow.priority,
+                                          message_id=str(self.workflow.id),
+                                          timestamp=time.time())

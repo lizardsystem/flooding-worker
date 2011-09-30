@@ -28,6 +28,7 @@ class ActionTask(Action):
         result_status = None
         self.channel = ch
         self.body = simplejson.loads(body)
+        self.properties = properties
         self.log.info("Start task")
         try:
             result_status = perform_task(self.body["scenario_id"],
@@ -43,7 +44,7 @@ class ActionTask(Action):
         if self.status_task(result_status):
             self.proceed_next_trigger()
         else:
-            self.requeue_failed_message(ch, method, properties)
+            self.requeue_failed_message(ch, method)
         ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
 
     def status_task(self, status = None):
@@ -54,8 +55,9 @@ class ActionTask(Action):
             return False
         if type(status).__name__ == 'boolean':
             return status
-        if type(status).__name__ == 'tuple':
+        if type(status).__name__ == 'tuple' and len(status) > 0:
             return status[0]
+        return False
 
     def proceed_next_trigger(self):
         """
@@ -76,7 +78,7 @@ class ActionTask(Action):
         except Exception as ex:
             self.log.error("{0}".format(ex))
 
-    def requeue_failed_message(self, ch, method, properties):
+    def requeue_failed_message(self, ch, method):
         """
         Sends message back to the origin queue or
         to the failed queue.
@@ -88,14 +90,14 @@ class ActionTask(Action):
             ch.basic_publish(exchange=method.exchange,
                              routing_key=method.routing_key,
                              body=simplejson.dumps(self.body),
-                             properties=properties)
+                             properties=self.properties)
             self.log.info("Task requeued due failure.")
         else:
             self.body["max_failures_tmp"][self.task_code] = self.body["max_failures"][self.task_code]
-            ch.basic_publish(exchange="failed",
+            ch.basic_publish(exchange="router",
                              routing_key="failed",
                              body=simplejson.dumps(self.body),
-                             properties=properties)
+                             properties=self.properties)
             self.log.info("Task moved to failed queue due failure.")
 
 

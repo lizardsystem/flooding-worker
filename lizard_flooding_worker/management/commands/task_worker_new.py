@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
     help = ("Example: bin/django task_worker_new "\
             "--task_code 120 "\
-            "--log_level 50 "\
+            "--log_level DEBUG "\
             "--worker_nr 1")
 
     option_list = BaseCommand.option_list + (

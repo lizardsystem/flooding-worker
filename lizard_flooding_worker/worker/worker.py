@@ -22,9 +22,10 @@ class Worker():
         """
         try:
             channel = self.connection.channel()
+            channel.basic_qos(prefetch_count=1)
             channel.basic_consume(self.action.callback,
                                   queue=self.task_code,
                                   no_ack=False)
             channel.start_consuming()
         except AMQPChannelError as ex:
-            log.error("Worker_nr: %s error: %s" % (worker_nr, ex.message))
+            log.error("Worker_nr: %s error: %s" % (self.worker_nr, ex))

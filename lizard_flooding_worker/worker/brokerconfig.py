@@ -2,8 +2,8 @@
 # (c) Nelen & Schuurmans.  GPL licensed.
 
 CONNECT_SETTINGS = {
-    "BROKER_HOST": "10.100.155.150",
-    #"BROKER_HOST": "localhost",
+    #"BROKER_HOST": "10.100.155.150",
+    "BROKER_HOST": "localhost",
     "BROKER_PORT": 5672,
     "BROKER_USER": "admin",
     "BROKER_PASSWORD": "kikker123",
@@ -17,6 +17,12 @@ QUEUES = {
     "logging": {
         "exchange": "router",
         "binding_key": "logging" },
+    "failed": {
+        "exchange": "router",
+        "binding_key": "failed" },
+    "sort": {
+        "exchange": "router",
+        "binding_key": "sort" },
     "120": {
         "exchange": "router",
         "binding_key": "120" },
