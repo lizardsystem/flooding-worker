@@ -2,7 +2,7 @@ Changelog of lizard-flooding-worker
 ===================================================
 
 
-0.1 (unreleased)
+0.1 (2012-02-29)
 ----------------
 
 - Added worker.
