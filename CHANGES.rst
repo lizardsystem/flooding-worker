@@ -2,10 +2,10 @@ Changelog of lizard-flooding-worker
 ===================================================
 
 
-0.2 (unreleased)
+0.2 (2012-06-08)
 ----------------
 
-- Nothing changed yet.
+- INCOMPATIBLE CHANGE: Now relies on renamed flooding-lib
 
 
 0.1 (2012-02-29)
