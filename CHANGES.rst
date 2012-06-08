@@ -2,8 +2,8 @@ Changelog of lizard-flooding-worker
 ===================================================
 
 
-0.3 (unreleased)
-----------------
+0.2.1 (2012-06-08)
+------------------
 
 - Nothing changed yet.
 

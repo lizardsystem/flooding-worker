@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class Workflow(models.Model):
-    scenario = models.ForeignKey('flooding-lib.Scenario')
+    scenario = models.ForeignKey('flooding_lib.Scenario')
     code = models.CharField(max_length=100)
     tstart = models.DateTimeField(
         blank=True,
