@@ -1,10 +1,10 @@
-lizard-flooding-worker
+flooding-worker
 ==========================================
 
 Itroduction
 ------------------------
 
-This the messaging application to manage the lizard-flooding
+This the messaging application to manage the flooding
 tasks. It uses the RabbitMQ as message broker, pika as client to send
 en recieve messages from the broker.
 
@@ -44,7 +44,7 @@ The message broker settings are in brokerconfig.py
 
 Load fixture
 
-   $> bin/django loaddata lizard_flooding_worker_initial
+   $> bin/django loaddata flooding_worker_initial
 
 Start logging_workers, it wil save the logs into database
 

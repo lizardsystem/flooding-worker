@@ -47,8 +47,8 @@ sys.setdefaultencoding('utf-8')
 import logging, math, os, datetime
 from nens import sobek, asc
 
-import lizard_flooding as flooding
-import lizard_base as base
+import flooding_lib as flooding
+import flooding_base as base
 from osgeo import osr, ogr, gdal
 
 #TO DO:

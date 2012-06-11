@@ -14,13 +14,15 @@ install_requires = [
     'django-extensions',
     'django-nose',
     'pkginfo',
+    'flooding-base',
+    'flooding-lib',
     'pika >= 0.9.5'
     ],
 
 tests_require = [
     ]
 
-setup(name='lizard-flooding-worker',
+setup(name='flooding-worker',
       version=version,
       description="TODO",
       long_description=long_description,
@@ -33,7 +35,7 @@ setup(name='lizard-flooding-worker',
       author_email='TODO@nelen-schuurmans.nl',
       url='',
       license='GPL',
-      packages=['lizard_flooding_worker'],
+      packages=['flooding_worker'],
       include_package_data=True,
       zip_safe=False,
       install_requires=install_requires,

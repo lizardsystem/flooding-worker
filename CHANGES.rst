@@ -1,11 +1,12 @@
-Changelog of lizard-flooding-worker
+Changelog of flooding-worker
 ===================================================
 
 
 0.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Renamed lizard-flooding-worker to flooding-worker. Renamed other
+  libraries in the project and references to them.
 
 
 0.2.1 (2012-06-08)
