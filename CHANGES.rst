@@ -2,7 +2,7 @@ Changelog of flooding-worker
 ===================================================
 
 
-0.3 (unreleased)
+0.3 (2012-06-11)
 ----------------
 
 - Renamed lizard-flooding-worker to flooding-worker. Renamed other
