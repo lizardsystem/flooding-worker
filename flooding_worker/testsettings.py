@@ -39,6 +39,7 @@ DATABASES = {
     }
 SITE_ID = 1
 INSTALLED_APPS = [
+    'flooding_lib',
     'flooding_worker',
     'lizard_ui',
     'staticfiles',
