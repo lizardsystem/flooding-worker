@@ -16,6 +16,7 @@ install_requires = [
     'pkginfo',
     'flooding-base',
     'flooding-lib',
+    'lizard-ui',
     'pika >= 0.9.5'
     ],
 
