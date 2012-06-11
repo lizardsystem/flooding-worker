@@ -6,7 +6,7 @@ from flooding_worker.models import WorkflowTask
 from flooding_worker.models import WorkflowTemplate
 from flooding_worker.models import WorkflowTemplateTask
 from flooding_worker.worker.action import Action
-from flooding.models import Scenario
+from flooding_lib.models import Scenario
 
 from pika import BasicProperties
 

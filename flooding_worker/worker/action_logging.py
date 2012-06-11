@@ -4,15 +4,15 @@
 import simplejson
 from datetime import datetime
 
-from lizard_flooding_worker.models import Workflow
-from lizard_flooding_worker.models import WorkflowTask
-from lizard_flooding_worker.models import TaskType
-from lizard_flooding_worker.models import Logging
+from flooding_worker.models import Workflow
+from flooding_worker.models import WorkflowTask
+from flooding_worker.models import TaskType
+from flooding_worker.models import Logging
 
-from lizard_flooding_worker.worker.action import Action
+from flooding_worker.worker.action import Action
 
 import logging
-log = logging.getLogger('lizard-flooding.action_logging')
+log = logging.getLogger('flooding.action_logging')
 
 
 class ActionLogging(Action):

@@ -3,8 +3,8 @@
 
 import simplejson
 
-from lizard_flooding_worker.worker.action import Action
-from lizard_flooding_worker.perform_task import perform_task
+from flooding_worker.worker.action import Action
+from flooding_worker.perform_task import perform_task
 
 import logging
 

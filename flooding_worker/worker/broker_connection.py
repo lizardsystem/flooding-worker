@@ -5,10 +5,10 @@ from pika import BlockingConnection
 from pika import ConnectionParameters
 from pika import PlainCredentials
 
-from lizard_flooding_worker.worker.brokerconfig import CONNECT_SETTINGS
+from flooding_worker.worker.brokerconfig import CONNECT_SETTINGS
 
 import logging
-log = logging.getLogger('lizard-flooding.broker')
+log = logging.getLogger('flooding.broker')
 
 
 class BrokerConnection(object):
