@@ -54,6 +54,9 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'django.contrib.sites',
     ]
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
 ROOT_URLCONF = 'flooding_worker.urls'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
