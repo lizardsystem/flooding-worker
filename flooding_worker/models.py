@@ -34,6 +34,9 @@ class Workflow(models.Model):
     def __unicode__(self):
         return self.code
 
+    class Meta:
+        db_table = 'lizard_flooding_worker_workflow'
+
 
 class WorkflowTemplate(models.Model):
     code = models.IntegerField(max_length=30)
@@ -41,12 +44,18 @@ class WorkflowTemplate(models.Model):
     def __unicode__(self):
         return str(self.code)
 
+    class Meta:
+        db_table = 'lizard_flooding_worker_workflowtemplate'
+
 
 class TaskType(models.Model):
     name = models.CharField(max_length=200)
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        db_table = 'lizard_flooding_worker_tasktype'
 
 
 class WorkflowTemplateTask(models.Model):
@@ -58,6 +67,9 @@ class WorkflowTemplateTask(models.Model):
 
     def __unicode__(self):
         return self.code.name
+
+    class Meta:
+        db_table = 'lizard_flooding_worker_workflowtemplatetask'
 
 
 class WorkflowTask(models.Model):
@@ -72,6 +84,9 @@ class WorkflowTask(models.Model):
 
     def __unicode__(self):
         return self.code.name
+
+    class Meta:
+        db_table = 'lizard_flooding_worker_workflowtask'
 
 
 class Logging(models.Model):
@@ -88,4 +103,6 @@ class Logging(models.Model):
 
     class Meta:
         get_latest_by = "time"
+        db_table = 'lizard_flooding_worker_logging'
+
 
