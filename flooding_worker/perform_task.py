@@ -1,7 +1,7 @@
 import os
 import logging #, threading, time, datetime, random, math
 
-from flooding import settings
+from django.conf import settings
 
 log = logging.getLogger('flooding.perform_task')
 

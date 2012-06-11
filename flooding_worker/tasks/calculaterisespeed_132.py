@@ -53,8 +53,8 @@ if __name__ == '__main__':
 
 from django.db import transaction
 from zipfile import ZipFile, ZIP_DEFLATED
-from lizard.flooding.models import Scenario, Result, ResultType
-from lizard.base.models import Setting
+from flooding_lib.models import Scenario, Result, ResultType
+from flooding_base.models import Setting
 from numpy import nan
 
 def set_broker_logging_handler(broker_handler=None):

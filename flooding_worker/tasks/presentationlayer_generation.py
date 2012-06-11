@@ -36,6 +36,31 @@ __revision__ = "$Rev: 8118 $"[6:-2]
 import sys
 import logging
 
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.contrib.gis.geos import Point
+
+from flooding_lib.models import Project, UserPermission, \
+    ProjectGroupPermission, Scenario, Region, RegionSet, Breach, \
+    ScenarioCutoffLocation, \
+    ScenarioBreach, Result, ResultType, Task, TaskType, \
+    ExternalWater, CutoffLocation, CutoffLocationSet, SobekModel, \
+    Scenario_PresentationLayer, ResultType_PresentationType
+from lizard_presentation.models import SourceLinkType, SourceLink, \
+    PresentationSource, PresentationType, PresentationLayer, \
+    PresentationShape, PresentationValueTable, PresentationGrid, Animation, Field
+from flooding_base.models import Setting
+
+from nens import sobek
+from nens.mock import Stream
+from nens.sobek import HISFile
+from osgeo import ogr, osr
+from shutil import copyfile, copytree, rmtree
+from zipfile import ZipFile, ZIP_DEFLATED
+
+import Image
+from django.conf import settings
+import os, datetime
+
 log = logging.getLogger('nens.web.flooding.presentationlayer_generation')
 
 def set_broker_logging_handler(broker_handler=None):
@@ -58,34 +83,10 @@ if __name__ == '__main__':
     from django.core.management import setup_environ
     setup_environ(settings)
 
-from django.contrib.gis.geos import MultiPolygon, Point, Polygon
-from django.contrib.gis.geos import Point
+    source_dir = Setting.objects.get( key = 'source_dir' ).value
+    dest_dir = Setting.objects.get( key = 'destination_dir' ).value
+    presentation_dir = Setting.objects.get( key = 'presentation_dir' ).value
 
-from lizard.flooding.models import Project, UserPermission, \
-    ProjectGroupPermission, Scenario, Region, RegionSet, Breach, \
-    ScenarioCutoffLocation, \
-    ScenarioBreach, Result, ResultType, Task, TaskType, \
-    ExternalWater, CutoffLocation, CutoffLocationSet, SobekModel, \
-    Scenario_PresentationLayer, ResultType_PresentationType
-from lizard.presentation.models import SourceLinkType, SourceLink, \
-    PresentationSource, PresentationType, PresentationLayer, \
-    PresentationShape, PresentationValueTable, PresentationGrid, Animation, Field
-from lizard.base.models import Setting
-
-from nens import sobek
-from nens.mock import Stream
-from nens.sobek import HISFile
-from osgeo import ogr, osr
-from shutil import copyfile, copytree, rmtree
-from zipfile import ZipFile, ZIP_DEFLATED
-
-import Image
-from lizard import settings
-import os, datetime
-
-source_dir = Setting.objects.get( key = 'source_dir' ).value
-dest_dir = Setting.objects.get( key = 'destination_dir' ).value
-presentation_dir = Setting.objects.get( key = 'presentation_dir' ).value
 
 def rel_path(loc):
     return loc.lstrip('\\').lstrip('/')

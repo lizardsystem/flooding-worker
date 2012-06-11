@@ -49,19 +49,19 @@ if __name__ == '__main__':
     setup_environ(lizard.settings)
 
 
-from lizard.flooding.models import Project, UserPermission, \
+from flooding_lib.models import Project, UserPermission, \
     ProjectGroupPermission, Scenario, Region, RegionSet, Breach, \
     ScenarioCutoffLocation, \
     ScenarioBreach, Result, ResultType, Task, TaskType, \
     ExternalWater, CutoffLocation, CutoffLocationSet, SobekModel, \
     Scenario_PresentationLayer, ResultType_PresentationType
 
-from lizard.presentation.models import SourceLinkType, SourceLink, \
+from lizard_presentation.models import SourceLinkType, SourceLink, \
     PresentationSource, PresentationType, PresentationLayer, \
     PresentationShape, PresentationValueTable, PresentationGrid, Animation, Field
 
 
-from lizard.base.models import Setting
+from flooding_base.models import Setting
 
 from zipfile import ZipFile, ZIP_DEFLATED
 import StringIO

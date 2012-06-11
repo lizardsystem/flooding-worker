@@ -3,7 +3,8 @@ from optparse import make_option
 import logging #, threading, time, datetime, random, math
 
 from django.core.management.base import BaseCommand
-from flooding import settings
+from django.conf import settings
+
 from flooding_worker.perform_task import perform_task
 
 log = logging.getLogger('flooding.worker.management.command.perform_task')
