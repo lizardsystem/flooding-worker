@@ -1,9 +1,9 @@
-from lizard_flooding_worker.models import Workflow
-from lizard_flooding_worker.models import Logging
-from lizard_flooding_worker.models import WorkflowTask
-from lizard_flooding_worker.models import WorkflowTemplate
-from lizard_flooding_worker.models import WorkflowTemplateTask
-from lizard_flooding_worker.models import TaskType
+from flooding_worker.models import Workflow
+from flooding_worker.models import Logging
+from flooding_worker.models import WorkflowTask
+from flooding_worker.models import WorkflowTemplate
+from flooding_worker.models import WorkflowTemplateTask
+from flooding_worker.models import TaskType
 
 from django.contrib import admin
 
