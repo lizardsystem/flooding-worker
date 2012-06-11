@@ -16,7 +16,7 @@ class ActionTask(Action):
         self.worker_nr = worker_nr
         self.connection = connection
         self.body = None
-        self.log = logging.getLogger('lizard-flooding.action.task')
+        self.log = logging.getLogger('flooding.action.task')
 
     def callback(self, ch, method, properties, body):
         """

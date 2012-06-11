@@ -4,7 +4,7 @@
 from pika.exceptions import AMQPChannelError
 
 import logging
-log = logging.getLogger('lizard-flooding.worker')
+log = logging.getLogger('flooding.worker')
 
 
 class Worker():

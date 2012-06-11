@@ -3,7 +3,7 @@
 
 import simplejson
 
-from lizard_flooding_worker.worker.action import Action
+from flooding_worker.worker.action import Action
 
 import logging
 
@@ -24,7 +24,7 @@ class ActionQueue(Action):
         self.target_queue = None
         self.connection = connection
         self.body = None
-        self.log = logging.getLogger('lizard-flooding.action.priority')
+        self.log = logging.getLogger('flooding.action.priority')
         self.bulk_messages = {}
 
     def callback(self, ch, method, properties, body):

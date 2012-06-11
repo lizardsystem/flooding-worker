@@ -25,9 +25,6 @@ def _egg_info(path_to_egg='../../'):
 project, author, version, release = _egg_info()
 this_year = datetime.date.today().year
 copyright = '%s, %s' % (this_year, author)
-# Comment out one of these if we're a django project.
-#os.environ['DJANGO_SETTINGS_MODULE'] = 'lizard_flooding_worker.testsettings'
-#os.environ['DJANGO_SETTINGS_MODULE'] = 'lizard_flooding_worker.settings'
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

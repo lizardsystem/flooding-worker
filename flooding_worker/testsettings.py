@@ -39,7 +39,7 @@ DATABASES = {
     }
 SITE_ID = 1
 INSTALLED_APPS = [
-    'lizard_flooding_worker',
+    'flooding_worker',
     'lizard_ui',
     'staticfiles',
     'compressor',
@@ -53,11 +53,9 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'django.contrib.sites',
     ]
-ROOT_URLCONF = 'lizard_flooding_worker.urls'
+ROOT_URLCONF = 'flooding_worker.urls'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    # Uncomment this one if you use lizard-map.
-    # 'lizard_map.context_processors.processor.processor',
     # Default django 1.3 processors.
     "django.contrib.auth.context_processors.auth",
     "django.core.context_processors.debug",
@@ -77,6 +75,6 @@ STATICFILES_FINDERS = STATICFILES_FINDERS
 
 try:
     # Import local settings that aren't stored in svn/git.
-    from lizard_flooding_worker.local_testsettings import *
+    from flooding_worker.local_testsettings import *
 except ImportError:
     pass

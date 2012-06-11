@@ -1,12 +1,12 @@
 #!/usr/bin/python
 # (c) Nelen & Schuurmans.  GPL licensed.
 
-from lizard_flooding_worker.models import Workflow
-from lizard_flooding_worker.models import WorkflowTask
-from lizard_flooding_worker.models import WorkflowTemplate
-from lizard_flooding_worker.models import WorkflowTemplateTask
-from lizard_flooding_worker.worker.action import Action
-from lizard_flooding.models import Scenario
+from flooding_worker.models import Workflow
+from flooding_worker.models import WorkflowTask
+from flooding_worker.models import WorkflowTemplate
+from flooding_worker.models import WorkflowTemplateTask
+from flooding_worker.worker.action import Action
+from flooding.models import Scenario
 
 from pika import BasicProperties
 
@@ -18,7 +18,7 @@ class ActionWorkflow(Action):
 
     def __init__(self, connection, scenario_id):
         self.connection = connection
-        self.log = logging.getLogger('lizard-flooding.action.workflow')
+        self.log = logging.getLogger('flooding.action.workflow')
         self.scenario_id = scenario_id
         self.body = {}
         self.workflow = None

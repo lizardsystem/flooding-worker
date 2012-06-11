@@ -5,13 +5,13 @@ import time
 import simplejson
 import logging
 
-from lizard_flooding_worker.worker.brokerconfig import QUEUES
+from flooding_worker.worker.brokerconfig import QUEUES
 
 
 class Action(object):
 
     def __init__(self):
-        self.log = logging.getLogger("lizard-flooding.action")
+        self.log = logging.getLogger("flooding.action")
         self.body = None
         self.broker_logging_handler = None
         self.channel = None

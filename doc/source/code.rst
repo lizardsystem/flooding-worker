@@ -1,6 +1,6 @@
 Code documentation
 ==================
 
-.. automodule:: lizard_flooding_worker.something
+.. automodule:: flooding_worker.something
    :members:
 

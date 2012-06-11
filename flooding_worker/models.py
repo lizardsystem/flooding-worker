@@ -1,8 +1,6 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.txt.
 import logging
 from django.db import models
-#from lizard_flooding.models import Scenario
-#from lizard_flooding.models import TaskType
 
 LOGGING_LEVELS = (
     (0, u'DEBUG'),

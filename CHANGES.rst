@@ -8,6 +8,9 @@ Changelog of flooding-worker
 - Renamed lizard-flooding-worker to flooding-worker. Renamed other
   libraries in the project and references to them.
 
+- Left scripts that import from 'lizard', 'lizard.base',
+  'lizard.flooding' and so on alone -- presumably these are obsolete
+  anyway and can be removed?
 
 0.2.1 (2012-06-08)
 ------------------

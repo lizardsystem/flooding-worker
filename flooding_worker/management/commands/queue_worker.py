@@ -4,12 +4,12 @@
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-from lizard_flooding_worker.worker.worker import Worker
-from lizard_flooding_worker.worker.action_queue import ActionQueue
-from lizard_flooding_worker.worker.broker_connection import BrokerConnection
+from flooding_worker.worker.worker import Worker
+from flooding_worker.worker.action_queue import ActionQueue
+from flooding_worker.worker.broker_connection import BrokerConnection
 
 import logging
-log = logging.getLogger("lizard-flooding.management.logging_worker")
+log = logging.getLogger("flooding.management.logging_worker")
 
 
 class Command(BaseCommand):

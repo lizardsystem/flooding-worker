@@ -14,14 +14,14 @@ handler404  # pyflakes
 
 urlpatterns = patterns(
     '',
-    url(r'^log/$', 'lizard_flooding_worker.views.homepage',
-        name='lizard_flooding_worker.homepage'),
+    url(r'^log/$', 'flooding_worker.views.homepage',
+        name='flooding_worker.homepage'),
     url(r'^log/customer/(?P<customer_id>\d+)/$',
-     'lizard_flooding_worker.views.homepage',
-        name='lizard_flooding_worker-workflows'),
+     'flooding_worker.views.homepage',
+        name='flooding_worker-workflows'),
     url(r'^log/customer/(?P<customer_id>\d+)/workflow/(?P<workflow_id>\d+)/$',
-     'lizard_flooding_worker.views.homepage',
-        name='lizard_flooding_worker-loggings'),
+     'flooding_worker.views.homepage',
+        name='flooding_worker-loggings'),
     (r'^admin/', include(admin.site.urls)),
     )
 

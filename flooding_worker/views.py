@@ -3,9 +3,9 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from lizard_flooding_worker.models import Workflow
-from lizard_flooding.models import Task
-from lizard_flooding_worker.models import Logging
+from flooding_worker.models import Workflow
+from flooding_lib.models import Task
+from flooding_worker.models import Logging
 
 def homepage(request,
              customer_id=None,

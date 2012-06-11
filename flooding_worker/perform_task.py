@@ -3,7 +3,7 @@ import logging #, threading, time, datetime, random, math
 
 from flooding import settings
 
-log = logging.getLogger('nens.lizard.flooding.perform_task')
+log = logging.getLogger('flooding.perform_task')
 
 TASK_ADMIN_CREATES_SCENARIO_050   =  50
 TASK_COMPUTE_SOBEK_MODEL_120      = 120
@@ -54,7 +54,7 @@ def perform_task(scenario_id, tasktype_id, worker_nr, broker_logging_handler=Non
         remarks = ''
         if tasktype_id == TASK_COMPUTE_SOBEK_MODEL_120:
             log.debug("execute TASK_COMPUTE_SOBEK_MODEL_120")
-            from lizard_flooding_worker.tasks import openbreach
+            from flooding_worker.tasks import openbreach
             openbreach.set_broker_logging_handler(broker_logging_handler)
             remarks = 'openbreach-' + openbreach.__revision__ + ' uitvoerder: %02d/'%worker_nr
             success_code = openbreach.compute_sobek_model(scenario_id,
@@ -62,7 +62,7 @@ def perform_task(scenario_id, tasktype_id, worker_nr, broker_logging_handler=Non
 
         elif tasktype_id == TASK_PERFORM_SOBEK_SIMULATION_130:
             log.debug("execute TASK_PERFORM_SOBEK_SIMULATION_130")
-            from lizard_flooding_worker.tasks import spawn
+            from flooding_worker.tasks import spawn
             spaw.set_broker_logging_handler(broker_logging_handler)
             remarks = 'spawn-' + spawn.__revision__ + ' uitvoerder: %02d/'%worker_nr
             success_code = spawn.perform_sobek_simulation(scenario_id,
@@ -71,7 +71,7 @@ def perform_task(scenario_id, tasktype_id, worker_nr, broker_logging_handler=Non
 
         elif tasktype_id == TASK_SOBEK_PNG_GENERATION_150:
             log.debug("execute TASK_SOBEK_PNG_GENERATION_150")
-            from lizard_flooding_worker.tasks import png_generation
+            from flooding_worker.tasks import png_generation
             png_generation.set_broker_logging_handler(broker_logging_handler)
             remarks = 'png_generation-' + png_generation.__revision__ + ' uitvoerder: %02d/'%worker_nr
             success_code = png_generation.sobek(scenario_id,
@@ -79,7 +79,7 @@ def perform_task(scenario_id, tasktype_id, worker_nr, broker_logging_handler=Non
 
         elif tasktype_id == TASK_COMPUTE_RISE_SPEED_132:
             log.debug("execute TASK_COMPUTE_RISE_SPEED_132")
-            from lizard_flooding_worker.tasks import calculaterisespeed_132
+            from flooding_worker.tasks import calculaterisespeed_132
             calculaterisespeed_132.set_broker_logging_handler(broker_logging_handler)
             remarks = 'calculaterisespeed_132-' + calculaterisespeed_132.__revision__ + ' uitvoerder: %02d/'%worker_nr
             success_code = calculaterisespeed_132.perform_calculation(scenario_id,
@@ -87,7 +87,7 @@ def perform_task(scenario_id, tasktype_id, worker_nr, broker_logging_handler=Non
 
         elif tasktype_id == TASK_COMPUTE_MORTALITY_GRID_134:
             log.debug("execute TASK_COMPUTE_MORTALITY_GRID_134")
-            from lizard_flooding_worker.tasks import calculatemortalitygrid_134
+            from flooding_worker.tasks import calculatemortalitygrid_134
             calculatemortalitygrid_134.set_broker_logging_handler(broker_logging_handler)
             remarks = 'calculatemortalitygrid_134-' + calculatemortalitygrid_134.__revision__ + ' uitvoerder: %02d/'%worker_nr
             success_code = calculatemortalitygrid_134.perform_calculation(scenario_id,
@@ -95,14 +95,14 @@ def perform_task(scenario_id, tasktype_id, worker_nr, broker_logging_handler=Non
 
         elif tasktype_id == TASK_SOBEK_PRESENTATION_GENERATION_155:
             log.debug("execute TASK_SOBEK_PRESENTATION_GENERATION_155")
-            from lizard_flooding_worker.tasks import presentationlayer_generation
+            from flooding_worker.tasks import presentationlayer_generation
             presentationlayer_generation.set_broker_logging_handler(broker_logging_handler)
             remarks = 'presentationlayer_generation-' + presentationlayer_generation.__revision__ + ' uitvoerder: %02d/'%worker_nr
             success_code = presentationlayer_generation.perform_presentation_generation(scenario_id)
 
         elif tasktype_id == TASK_HISSSM_SIMULATION_160:
             log.debug("execute TASK_HISSSM_SIMULATION_160")
-            from lizard_flooding_worker.tasks import hisssm_160
+            from flooding_worker.tasks import hisssm_160
             hisssm_160.set_broker_logging_handler(broker_logging_handler)
             remarks = 'hisssm_160-' + hisssm_160.__revision__ + ' uitvoerder: %02d/'%worker_nr
             success_code = hisssm_160.perform_HISSSM_calculation(scenario_id,
@@ -110,21 +110,21 @@ def perform_task(scenario_id, tasktype_id, worker_nr, broker_logging_handler=Non
 
         elif tasktype_id == TASK_SOBEK_EMBANKMENT_DAMAGE_162:
             log.debug("execute TASK_SOBEK_EMBANKMENT_DAMAGE_162")
-            from lizard_flooding_worker.tasks import kadeschade_module
+            from flooding_worker.tasks import kadeschade_module
             kadeschade_module.set_broker_logging_handler(broker_logging_handler)
             remarks = 'kadeschade_module-' + kadeschade_module.__revision__ + ' uitvoerder: %02d/'%worker_nr
             success_code, error_message = kadeschade_module.calc_damage(scenario_id)
 
         elif tasktype_id == TASK_HISSSM_PNG_GENERATION_180:
             log.debug("execute TASK_HISSSM_PNG_GENERATION_180")
-            from lizard_flooding_worker.tasks import png_generation
+            from flooding_worker.tasks import png_generation
             png_generation.set_broker_logging_handler(broker_logging_handler)
             remarks = 'png_generation-' + png_generation.__revision__ + ' uitvoerder: %02d/'%worker_nr
             success_code = png_generation.his_ssm(scenario_id, tmp_directory)
 
         elif tasktype_id == TASK_HISSSM_PRESENTATION_GENERATION_185:
             log.debug("execute TASK_HISSSM_PRESENTATION_GENERATION_185")
-            from lizard_flooding_worker.tasks import presentationlayer_generation
+            from flooding_worker.tasks import presentationlayer_generation
             presentationlayer_generation.set_broker_logging_handler(broker_logging_handler)
             remarks = 'presentationlayer_generation-' + presentationlayer_generation.__revision__ + ' uitvoerder: %02d/'%worker_nr
             success_code = presentationlayer_generation.perform_presentation_generation(scenario_id)
