@@ -2,8 +2,8 @@ Changelog of flooding-worker
 ===================================================
 
 
-0.4 (unreleased)
-----------------
+0.3.1 (2012-06-11)
+------------------
 
 - Added dependency to lizard_ui, test settings uses its settingshelper.
 
