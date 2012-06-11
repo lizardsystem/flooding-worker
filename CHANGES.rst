@@ -2,7 +2,7 @@ Changelog of flooding-worker
 ===================================================
 
 
-0.3.2 (unreleased)
+0.3.2 (2012-06-11)
 ------------------
 
 - Nothing changed yet.
