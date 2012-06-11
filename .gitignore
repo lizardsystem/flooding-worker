@@ -7,3 +7,6 @@ parts
 *.pyc
 .mr.developer.cfg
 dist
+src
+var
+nosetests.xml
