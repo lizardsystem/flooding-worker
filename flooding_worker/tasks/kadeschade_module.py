@@ -56,7 +56,7 @@ from flooding_lib.models import Project, UserPermission, \
     ExternalWater, CutoffLocation, CutoffLocationSet, SobekModel, \
     Scenario_PresentationLayer, ResultType_PresentationType
 
-from lizard_presentation.models import SourceLinkType, SourceLink, \
+from flooding_presentation.models import SourceLinkType, SourceLink, \
     PresentationSource, PresentationType, PresentationLayer, \
     PresentationShape, PresentationValueTable, PresentationGrid, Animation, Field
 
