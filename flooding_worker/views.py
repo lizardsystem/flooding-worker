@@ -3,9 +3,10 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from flooding_worker.models import Workflow
-from flooding_lib.models import Task
+#from flooding_worker.models import Workflow
+#from flooding_lib.models import Task
 from flooding_worker.models import Logging
+
 
 def homepage(request,
              customer_id=None,
@@ -15,7 +16,8 @@ def homepage(request,
     loggings = Logging.objects.all().order_by('-time')
     return render_to_response(
         template,
-        {"customers": customers,
-         "workflows": workflow,
-         "loggings": loggings},
+        {
+#            "customers": customers,
+#            "workflows": workflow,
+            "loggings": loggings},
         context_instance=RequestContext(request))

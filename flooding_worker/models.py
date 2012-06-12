@@ -80,7 +80,7 @@ class WorkflowTask(models.Model):
     max_duration_minutes = models.IntegerField(default=0)
     tstart = models.DateTimeField(blank=True, null=True)
     tfinished = models.DateTimeField(blank=True, null=True)
-    successful = models.NullBooleanField(blank = True, null=True)
+    successful = models.NullBooleanField(blank=True, null=True)
 
     def __unicode__(self):
         return self.code.name
@@ -104,5 +104,3 @@ class Logging(models.Model):
     class Meta:
         get_latest_by = "time"
         db_table = 'lizard_flooding_worker_logging'
-
-
