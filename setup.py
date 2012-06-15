@@ -17,7 +17,8 @@ install_requires = [
     'flooding-base',
     'flooding-lib',
     'lizard-ui',
-    'pika >= 0.9.5'
+    'pika >= 0.9.5',
+    'simplejson',
     ],
 
 tests_require = [
