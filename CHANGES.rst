@@ -2,8 +2,8 @@ Changelog of flooding-worker
 ===================================================
 
 
-0.6 (unreleased)
-----------------
+0.5.1 (2012-06-15)
+------------------
 
 - Add simplejson to dependencies.
 
