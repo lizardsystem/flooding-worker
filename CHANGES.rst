@@ -2,10 +2,10 @@ Changelog of flooding-worker
 ===================================================
 
 
-0.5 (unreleased)
+0.5 (2012-06-15)
 ----------------
 
-- Nothing changed yet.
+- Add initial south migration.
 
 
 0.4 (2012-06-12)
