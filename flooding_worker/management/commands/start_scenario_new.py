@@ -15,6 +15,7 @@ class Command(BaseCommand):
 
     help = ("Example: bin/django start_scenario_new "\
             "--scenario_id 50 "\
+            "--workflowtemplate_id 1 "\
             "--log_level DEBUG")
 
     option_list = BaseCommand.option_list + (
@@ -24,6 +25,9 @@ class Command(BaseCommand):
                         type='str'),
             make_option('--scenario_id',
                         help='scenarios',
+                        type='int'),
+            make_option('--workflowtemplate_id',
+                        help='id of workflow template',
                         type='int'))
 
     def handle(self, *args, **options):
@@ -47,7 +51,8 @@ class Command(BaseCommand):
             log.error("Could not connect to broker.")
             return
 
-        action = ActionWorkflow(connection, options["scenario_id"])
+        action = ActionWorkflow(
+            connection, options["scenario_id"], options["workflowtemplate_id"])
 
         logging.handlers.AMQPMessageHandler = AMQPMessageHandler
         broker_handler = logging.handlers.AMQPMessageHandler(action, numeric_level)

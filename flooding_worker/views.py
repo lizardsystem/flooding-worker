@@ -17,7 +17,7 @@ def homepage(request,
     return render_to_response(
         template,
         {
-#            "customers": customers,
+#           "customers": customers,
 #            "workflows": workflow,
             "loggings": loggings},
         context_instance=RequestContext(request))

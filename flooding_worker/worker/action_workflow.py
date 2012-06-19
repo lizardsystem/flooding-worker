@@ -6,7 +6,6 @@ from flooding_worker.models import WorkflowTask
 from flooding_worker.models import WorkflowTemplate
 from flooding_worker.models import WorkflowTemplateTask
 from flooding_worker.worker.action import Action
-from flooding_lib.models import Scenario
 
 from pika import BasicProperties
 
@@ -16,10 +15,12 @@ import logging
 
 class ActionWorkflow(Action):
 
-    def __init__(self, connection, scenario_id):
+    def __init__(self, connection, scenario_id, workflowtemplate_id, workflowpriority=0):
         self.connection = connection
         self.log = logging.getLogger('flooding.action.workflow')
         self.scenario_id = scenario_id
+        self.workflowtemplate_id = workflowtemplate_id
+        self.workflowpriority = workflowpriority
         self.body = {}
         self.workflow = None
         self.bulk_tasks = []
@@ -34,7 +35,10 @@ class ActionWorkflow(Action):
         Creates message body as instruction
         Sends message to next queue(s)
         """
-        self.create_workflow()
+        self.set_message_properties()
+        if not self.create_workflow():
+            self.log.error("Workflow is interrupted.")
+            return
         self.body = self.retrieve_workflow_options()
         self.set_message_properties()
         self.start_workflow()
@@ -45,13 +49,21 @@ class ActionWorkflow(Action):
         Creates and sets workflow, tasks.
         """
         try:
-            scenario = Scenario.objects.get(pk=self.scenario_id)
-            template = WorkflowTemplate.objects.get(pk=scenario.workflow_template_id)
+            template = WorkflowTemplate.objects.get(pk=self.workflowtemplate_id)
+            if template is None:
+                self.log.warning("Workflow template '%s' does not exist.")
+                return False
             template_tasks = WorkflowTemplateTask.objects.filter(workflow_template=template.id)
-            self.workflow = Workflow(scenario=scenario,
-                                     code=self.scenario_id,
-                                     priority=scenario.calcpriority)
+            if template_tasks.exists() == False:
+                self.log.warning("Workflow template '%s' has not any task." % template.code)
+                return False
+            self.workflow = Workflow(scenario=self.scenario_id,
+                                     code=template.code,
+                                     template=template,
+                                     priority=self.workflowpriority)
             self.workflow.save()
+            self.log.debug("Created workflow '%s' for scenario '%s'." % (
+                    template.code, self.scenario_id))
             self.bulk_tasks = []
             for template_task in template_tasks:
                 task = WorkflowTask(workflow=self.workflow,
@@ -61,8 +73,12 @@ class ActionWorkflow(Action):
                                     max_duration_minutes=template_task.max_duration_minutes)
                 task.save()
                 self.bulk_tasks.append(task)
+            self.log.debug("Created '%s' tasks for workflow '%s', scenario '%s'." % (
+                    len(self.bulk_tasks), template.code, self.scenario_id))
+            return True
         except Exception as ex:
             self.log.error("{0}".format(ex))
+            return False
 
 
     def retrieve_workflow_options(self):
@@ -108,10 +124,13 @@ class ActionWorkflow(Action):
                                  "Message emitted to queue %s" % queue,
                                  queue)
 
-    def set_message_properties(self):
-        print type(self.workflow.id)
+    def set_message_properties(self, priority=0, message_id=0):
+        if self.workflow is not None:
+            priority = self.workflow.priority
+            message_id = self.workflow.id
+
         self.properties = BasicProperties(content_type="application/json",
                                           delivery_mode=2,
-                                          priority=self.workflow.priority,
-                                          message_id=str(self.workflow.id),
+                                          priority=priority,
+                                          message_id=str(message_id),
                                           timestamp=time.time())
