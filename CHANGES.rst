@@ -2,8 +2,8 @@ Changelog of flooding-worker
 ===================================================
 
 
-0.6 (unreleased)
-----------------
+0.6.1 (2012-06-19)
+------------------
 
 - Replaced dependency floding_worker.Workflow to flooding_lib.Scenario.
 
