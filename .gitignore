@@ -10,3 +10,4 @@ dist
 src
 var
 nosetests.xml
+local_testsettings.py
