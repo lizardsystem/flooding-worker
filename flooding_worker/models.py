@@ -14,9 +14,20 @@ LOGGING_LEVELS = (
 logger = logging.getLogger(__name__)
 
 
+class WorkflowTemplate(models.Model):
+    code = models.IntegerField(max_length=30)
+
+    def __unicode__(self):
+        return str(self.code)
+
+    class Meta:
+        db_table = 'flooding_worker_workflowtemplate'
+
+
 class Workflow(models.Model):
-    scenario = models.ForeignKey('flooding_lib.Scenario')
     code = models.CharField(max_length=100)
+    template = models.ForeignKey(WorkflowTemplate, blank=True, null=True)
+    scenario = models.IntegerField(blank=True, null=True)
     tstart = models.DateTimeField(
         blank=True,
         null=True)
@@ -35,17 +46,7 @@ class Workflow(models.Model):
         return self.code
 
     class Meta:
-        db_table = 'lizard_flooding_worker_workflow'
-
-
-class WorkflowTemplate(models.Model):
-    code = models.IntegerField(max_length=30)
-
-    def __unicode__(self):
-        return str(self.code)
-
-    class Meta:
-        db_table = 'lizard_flooding_worker_workflowtemplate'
+        db_table = 'flooding_worker_workflow'
 
 
 class TaskType(models.Model):
@@ -55,7 +56,7 @@ class TaskType(models.Model):
         return self.name
 
     class Meta:
-        db_table = 'lizard_flooding_worker_tasktype'
+        db_table = 'flooding_worker_tasktype'
 
 
 class WorkflowTemplateTask(models.Model):
@@ -69,7 +70,7 @@ class WorkflowTemplateTask(models.Model):
         return self.code.name
 
     class Meta:
-        db_table = 'lizard_flooding_worker_workflowtemplatetask'
+        db_table = 'flooding_worker_workflowtemplatetask'
 
 
 class WorkflowTask(models.Model):
@@ -86,7 +87,7 @@ class WorkflowTask(models.Model):
         return self.code.name
 
     class Meta:
-        db_table = 'lizard_flooding_worker_workflowtask'
+        db_table = 'flooding_worker_workflowtask'
 
 
 class Logging(models.Model):
@@ -103,4 +104,4 @@ class Logging(models.Model):
 
     class Meta:
         get_latest_by = "time"
-        db_table = 'lizard_flooding_worker_logging'
+        db_table = 'flooding_worker_logging'

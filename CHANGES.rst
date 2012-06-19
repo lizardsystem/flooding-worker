@@ -5,8 +5,12 @@ Changelog of flooding-worker
 0.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Replaced dependency floding_worker.Workflow to flooding_lib.Scenario.
 
+- Created a new initial migrationschema.
+
+- Renamed lizard_flooding_worker to flooding_worker in Meta class of
+  the model.
 
 0.5.1 (2012-06-15)
 ------------------
