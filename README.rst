@@ -40,7 +40,8 @@ and add them to the ``develop =`` list in buildout.cfg.
 
 Tests can always be run with ``bin/test`` or ``bin\test.exe``.
 
-The message broker settings are in brokerconfig.py
+Add BROKER_SETTINGS and QUEUES to the project settings (see example in
+brokerconfig.py)
 
 Load fixture
 

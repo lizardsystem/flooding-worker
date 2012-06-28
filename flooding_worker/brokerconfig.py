@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # (c) Nelen & Schuurmans.  GPL licensed.
 
-CONNECT_SETTINGS = {
+BROKER_SETTINGS = {
     #"BROKER_HOST": "10.100.155.150",
     "BROKER_HOST": "localhost",
     "BROKER_PORT": 5672,

@@ -5,7 +5,7 @@ from pika import BlockingConnection
 from pika import ConnectionParameters
 from pika import PlainCredentials
 
-from flooding_worker.worker.brokerconfig import CONNECT_SETTINGS
+from django.conf import settings
 
 import logging
 log = logging.getLogger('flooding.broker')
@@ -14,11 +14,11 @@ log = logging.getLogger('flooding.broker')
 class BrokerConnection(object):
 
     def __init__(self):
-        self.host = CONNECT_SETTINGS["BROKER_HOST"]
-        self.port = CONNECT_SETTINGS["BROKER_PORT"]
-        self.virtual_host = CONNECT_SETTINGS["BROKER_VHOST"]
-        self.user = CONNECT_SETTINGS["BROKER_USER"]
-        self.password = CONNECT_SETTINGS["BROKER_PASSWORD"]
+        self.host = settings.BROKER_SETTINGS.get("BROKER_HOST", '')
+        self.port = settings.BROKER_SETTINGS.get("BROKER_PORT", '')
+        self.virtual_host = settings.BROKER_SETTINGS.get("BROKER_VHOST", '')
+        self.user = settings.BROKER_SETTINGS.get("BROKER_USER", '')
+        self.password = settings.BROKER_SETTINGS.get("BROKER_PASSWORD", '')
 
     def connect_to_broker(self):
         """Returns connection object,

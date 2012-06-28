@@ -5,7 +5,7 @@ import time
 import simplejson
 import logging
 
-from flooding_worker.worker.brokerconfig import QUEUES
+from django.conf import settings
 
 
 class Action(object):
@@ -49,7 +49,7 @@ class Action(object):
 
     def retrieve_queue_options(self, task_code):
         """Retrieves queue info from brokerconfig file."""
-        return QUEUES[task_code]
+        return settings.QUEUES.get(task_code, None)
 
     def next_queues(self):
         """
