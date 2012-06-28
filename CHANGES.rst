@@ -2,7 +2,7 @@ Changelog of flooding-worker
 ===================================================
 
 
-0.6.2 (unreleased)
+0.6.2 (2012-06-28)
 ------------------
 
 - Replaced broker settings, to config broker see README.rst.
