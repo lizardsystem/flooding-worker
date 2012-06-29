@@ -55,11 +55,11 @@ if __name__ == '__main__':
 from django.db import transaction
 import os, stat
 from zipfile import ZipFile, ZIP_DEFLATED
-from lizard.flooding.models import Scenario, Result, ResultType
-from lizard.base.models import Setting
+from flooding_lib.models import Scenario, Result, ResultType
+from flooding_base.models import Setting
 
 
-def common_generation(connection, scenario_id, tmp_dir, source_programs):
+def common_generation(scenario_id, tmp_dir, source_programs):
     """invokes compute_png_files for all grids
 
     loop on all results computed for the given scenario_id, unpack
@@ -277,11 +277,11 @@ def compute_png_files(result, abs_output_dir_name, tmp_dir, def_grid, colormappi
 
     return (basename + "####")[:8]
 
-def sobek(connection, scenario_id, tmp_dir):
-    return common_generation(connection, scenario_id, tmp_dir, [SOBEK_PROGRAM_ID, IMPORT_PROGRAM_ID])
+def sobek(scenario_id, tmp_dir):
+    return common_generation(scenario_id, tmp_dir, [SOBEK_PROGRAM_ID, IMPORT_PROGRAM_ID])
 
-def his_ssm(connection, scenario_id, tmp_dir):
-    return common_generation(connection, scenario_id, tmp_dir, [HISSSM_PROGRAM_ID])
+def his_ssm(scenario_id, tmp_dir):
+    return common_generation(scenario_id, tmp_dir, [HISSSM_PROGRAM_ID])
 
 if __name__ == '__main__':
     pass

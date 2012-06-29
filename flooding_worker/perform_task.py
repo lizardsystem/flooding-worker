@@ -43,11 +43,10 @@ def perform_task(
     tmp_directory = os.path.join(tmp_root, str(worker_nr))
     sobek_project_directory = os.path.join(
         sobek_project_root, 'lzfl_%03d' % worker_nr)
-    print sobek_project_directory
-    print worker_nr
 
     try:
         success_code = False
+        error_message = ""
         remarks = ''
         if tasktype_id == TASK_COMPUTE_SOBEK_MODEL_120:
             log.debug("execute TASK_COMPUTE_SOBEK_MODEL_120")
@@ -61,7 +60,7 @@ def perform_task(
         elif tasktype_id == TASK_PERFORM_SOBEK_SIMULATION_130:
             log.debug("execute TASK_PERFORM_SOBEK_SIMULATION_130")
             from flooding_worker.tasks import spawn
-            spaw.set_broker_logging_handler(broker_logging_handler)
+            spawn.set_broker_logging_handler(broker_logging_handler)
             remarks = ('spawn-' + spawn.__revision__ +
                        ' uitvoerder: %02d/' % worker_nr)
             success_code = spawn.perform_sobek_simulation(
@@ -75,8 +74,7 @@ def perform_task(
             png_generation.set_broker_logging_handler(broker_logging_handler)
             remarks = ('png_generation-' + png_generation.__revision__ +
                        ' uitvoerder: %02d/' % worker_nr)
-            success_code = png_generation.sobek(scenario_id,
-                                                tmp_directory)
+            success_code = png_generation.sobek(scenario_id, tmp_directory)
 
         elif tasktype_id == TASK_COMPUTE_RISE_SPEED_132:
             log.debug("execute TASK_COMPUTE_RISE_SPEED_132")

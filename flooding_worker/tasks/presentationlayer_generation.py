@@ -76,17 +76,6 @@ if sys.version_info < (2, 5):
     print message
     log.error(message)
 
-if __name__ == '__main__':
-    sys.path.append('..')
-
-    import lizard.settings
-    from django.core.management import setup_environ
-    setup_environ(settings)
-
-    source_dir = Setting.objects.get( key = 'source_dir' ).value
-    dest_dir = Setting.objects.get( key = 'destination_dir' ).value
-    presentation_dir = Setting.objects.get( key = 'presentation_dir' ).value
-
 
 def rel_path(loc):
     return loc.lstrip('\\').lstrip('/')
@@ -706,15 +695,10 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
                 pl.delete()
 
 
-def perform_presentation_generation(settings, scenario_id):
+def perform_presentation_generation(scenario_id):
     """main routine
 
     """
-    #setup the django environment
-    #from django.core.management import setup_environ
-    #setup_environ(settings)
-
-    from lizard.flooding.models import Scenario, PresentationType
 
     scenario = Scenario.objects.get(id = scenario_id)
     #get ids of results of this scenario
@@ -761,15 +745,3 @@ def perform_presentation_generation(settings, scenario_id):
 
 
     return True
-
-
-if __name__ == '__main__':
-    loglevel = logging.DEBUG
-
-    logging.basicConfig(level = loglevel, format='%(asctime)s %(levelname)s %(message)s' ,)
-
-
-    scenarios = Scenario.objects.filter(status_cache__in = (Scenario.STATUS_CALCULATED, Scenario.STATUS_APPROVED)).order_by('id') # filter(id = 63)
-    for scenario in scenarios:
-        log.info('scenario: ' + str(scenario.id))
-        perform_presentation_generation(settings, scenario.id)
