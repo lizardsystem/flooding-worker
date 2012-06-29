@@ -529,8 +529,9 @@ def get_or_create_value_presentation_source(scenario, pt, get_animation_info, ch
             animation['firstnr'] = 0
             animation['lastnr'] = his.size()-1
             animation['startnr'] = 0
-    except Exception, e:
+    except Exception as e:
         log.error('error generation value source')
+        log.error(','.join(map(str, e.args)))
         return False, None, None, None
 
     return True, source, animation, new

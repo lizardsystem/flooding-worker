@@ -90,7 +90,7 @@ def calc_mortality_grid(stijg,depth):
     return result
 
 
-def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
+def perform_calculation(tmp_location, scenario_id, year, timeout=0):
 
     log.debug("step 0a: get settings")
     scenario = Scenario.objects.get(pk=scenario_id)
