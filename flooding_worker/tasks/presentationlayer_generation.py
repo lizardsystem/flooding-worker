@@ -530,8 +530,7 @@ def get_or_create_value_presentation_source(scenario, pt, get_animation_info, ch
             animation['lastnr'] = his.size()-1
             animation['startnr'] = 0
     except Exception, e:
-        log.error('error generation value source')
-        log.error(e)
+        log.error('error generation value source: %s'%e)
         return False, None, None, None
 
     return True, source, animation, new
