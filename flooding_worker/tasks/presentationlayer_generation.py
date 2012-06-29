@@ -530,7 +530,7 @@ def get_or_create_value_presentation_source(scenario, pt, get_animation_info, ch
             animation['lastnr'] = his.size()-1
             animation['startnr'] = 0
     except Exception, e:
-        log.error('error generation value source: %s'%e)
+        log.error('error generation value source')
         return False, None, None, None
 
     return True, source, animation, new
@@ -617,6 +617,8 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
 
         try:
             log.info(result.resultpngloc)
+            dest_dir = Setting.objects.get(key='DESTINATION_DIR').value
+            presentation_dir = Setting.objects.get(key='PRESENTATION_DIR').value
             if result.resultpngloc is not None:
                 log.debug('read grid information from pgw en png file!')
                 resultpngloc = result.resultpngloc.replace('\\', '/')
@@ -698,7 +700,6 @@ def perform_presentation_generation(scenario_id):
     """main routine
 
     """
-
     scenario = Scenario.objects.get(id = scenario_id)
     #get ids of results of this scenario
     #results_list = list(scenario.result_set.values_list('id', flat=True))
