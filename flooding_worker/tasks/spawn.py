@@ -24,6 +24,9 @@
 #*
 #* initial programmer :  Mario Frasca
 #* initial date       :  <yyyymmdd>
+#* changed by         :  Alexandr Seleznev
+#* changed at         :  20120601
+#* changes            :  integration with django, pylint, pep8
 #**********************************************************************
 
 __revision__ = "$Rev$"[6:-2]
@@ -32,19 +35,17 @@ __revision__ = "$Rev$"[6:-2]
 times out.  please refer to LizardKadebreukRekencentrumSobekUitvoeren
 for more details.
 """
+import time
+import os  # used throughout the code...
 import logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
+logging.basicConfig(
+    level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
 log = logging.getLogger('nens')
 
-if __name__ == '__main__':
-    sys.path.append('..')
+from flooding_lib.models import Scenario, ResultType, Task
+from flooding_base.models import Setting
 
-    from django.core.management import setup_environ
-    import lizard.settings
-    setup_environ(lizard.settings)
-
-from lizard.flooding.models import Scenario, Result, ResultType, Task
-from lizard.base.models import Setting
+from zipfile import ZipFile, ZIP_DEFLATED
 
 default_sobek_locations = {
     'v2.09': 'e:/sobek209/',
@@ -53,12 +54,12 @@ default_sobek_locations = {
     'v2.12': 'e:/sobek212/',
     }
 
-import time, os # used throughout the code...
 
 def kill(pid):
     """kill function for Win32
 
-    returns the return code of TerminateProcess or None in case of any failure"""
+    returns the return code of TerminateProcess or
+    None in case of any failure"""
     try:
         import win32api
         handle = win32api.OpenProcess(1, False, pid)
@@ -68,6 +69,7 @@ def kill(pid):
         result = None
         pass
     return result
+
 
 def watchdog(child, cmtwork_dir, ):
     """keep running until the simulate program has written to the
@@ -81,13 +83,14 @@ terminating the subprocess when the computation is completed.
     # as a different code appears or after 20 seconds.
     warming_up = 20
 
-    file_to_monitor = os.sep.join(cmtwork_dir+['PLUVIUS1.rtn'])
+    file_to_monitor = os.sep.join(cmtwork_dir + ['PLUVIUS1.rtn'])
     last_stat = None
     text = ' 51\nstill warming up'
 
     while True:
         try:
-            if warming_up: warming_up -= 1
+            if warming_up:
+                warming_up -= 1
 
             curr_stat = os.stat(file_to_monitor)
             if curr_stat != last_stat:
@@ -97,7 +100,7 @@ terminating the subprocess when the computation is completed.
                 # reading it may cause an exception if 'simulate' is
                 # still writing to the file.  no problem: we will
                 # check at next step.
-                input = open(os.sep.join(cmtwork_dir+['PLUVIUS1.rtn']))
+                input = open(os.sep.join(cmtwork_dir + ['PLUVIUS1.rtn']))
                 text = input.readlines()
                 input.close()
 
@@ -146,9 +149,10 @@ terminating the subprocess when the computation is completed.
     log.debug("watchdog thinks the child ended but will kill it to make sure.")
     if kill(child.pid) is not None:
         log.debug("it was a good idea to kill the child.")
-        output = open(os.sep.join(cmtwork_dir+['PLUVIUS1.rtn']), "w")
+        output = open(os.sep.join(cmtwork_dir + ['PLUVIUS1.rtn']), "w")
         output.write(" 51\nSimulation interrupted by spawning script\n\n")
         output.close()
+
 
 def alarm_handler(timeout, child):
     count = 0
@@ -161,6 +165,7 @@ def alarm_handler(timeout, child):
     log.debug("alarm_handler is about to kill the child")
     kill(child.pid)
 
+
 def set_broker_logging_handler(broker_handler=None):
     """
     """
@@ -169,7 +174,9 @@ def set_broker_logging_handler(broker_handler=None):
     else:
         log.warning("Broker logging handler does not set.")
 
-def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='lizardkb'):
+
+def perform_sobek_simulation(scenario_id, task_id, timeout,
+                             project_name='lizardkb'):
     """task 130: perform_sobek_simulation
     """
 
@@ -193,7 +200,8 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
     cmtwork_dir = project_dir + ['CMTWORK']
 
     output_dir_name = os.path.join(destination_dir, scenario.get_rel_destdir())
-    model_file_location = os.path.join(destination_dir, scenario.result_set.get(resulttype=26).resultloc)
+    model_file_location = os.path.join(
+        destination_dir, scenario.result_set.get(resulttype=26).resultloc)
 
     log.debug("empty project_dir WORK & 1")
     for to_empty in [work_dir, case_1_dir, cmtwork_dir]:
@@ -203,14 +211,13 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
 
     log.debug("open the archived sobek model " + output_dir_name + "model.zip")
 
-    from zipfile import ZipFile, ZIP_DEFLATED
     input_file = ZipFile(model_file_location, "r")
 
     log.debug("unpacking the archived sobek model to project_dir WORK & 1")
-    if not os.path.isdir(os.sep.join(work_dir+['grid'])):
-        os.makedirs(os.sep.join(work_dir+['grid']))
-    if not os.path.isdir(os.sep.join(case_1_dir+['grid'])):
-        os.makedirs(os.sep.join(case_1_dir+['grid']))
+    if not os.path.isdir(os.sep.join(work_dir + ['grid'])):
+        os.makedirs(os.sep.join(work_dir + ['grid']))
+    if not os.path.isdir(os.sep.join(case_1_dir + ['grid'])):
+        os.makedirs(os.sep.join(case_1_dir + ['grid']))
     for name in input_file.namelist():
         content = input_file.read(name)
         temp = file(os.sep.join(work_dir + [name]), "wb")
@@ -220,8 +227,10 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
         temp.write(content)
         temp.close()
 
-    settings_ini_location = os.path.join(source_dir, scenario.sobekmodel_inundation.sobekversion.fileloc_startfile)
-    log.debug("copy from "+settings_ini_location+" to the CMTWORK dir")
+    settings_ini_location = os.path.join(
+        source_dir,
+        scenario.sobekmodel_inundation.sobekversion.fileloc_startfile)
+    log.debug("copy from " + settings_ini_location + " to the CMTWORK dir")
     for name in ['simulate.ini', 'casedesc.cmt']:
         temp = file(os.sep.join(cmtwork_dir + [name]), "w")
         content = file(settings_ini_location + name, "r").read()
@@ -292,18 +301,18 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
     log.debug("adding to the database what results have been computed...")
     for resulttype_id, _, _, name in matcher_destination:
         # table results
-        result, new = scenario.result_set.get_or_create(resulttype=ResultType.objects.get(pk=resulttype_id))
-        result.resultloc =  os.path.join(scenario.get_rel_destdir(), name + '.zip')
+        result, new = scenario.result_set.get_or_create(
+            resulttype=ResultType.objects.get(pk=resulttype_id))
+        result.resultloc = os.path.join(scenario.get_rel_destdir(), name + '.zip')
         result.firstnr = min_file_nr.get(resulttype_id)
         result.lastnr = max_file_nr.get(resulttype_id)
         result.save()
-
 
     log.info("saved %d files" % saved)
 
     log.debug("check return code and return False if not ok")
     try:
-        output = file(os.sep.join(cmtwork_dir+['PLUVIUS1.rtn']), "r")
+        output = file(os.sep.join(cmtwork_dir + ['PLUVIUS1.rtn']), "r")
         remarks = output.read()
     except:
         remarks = ' 51\nerror reading output file'
@@ -314,7 +323,8 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
         task = Task.objects.get(pk=task_id)
         task.remarks = remarks
         task.save()
-        result = remarks.split('\n')[1:3] # the first two lines of the original content of PLUVIUS1
+        # the first two lines of the original content of PLUVIUS1
+        result = remarks.split('\n')[1:3]
     except Exception, e:
         log.warning("error writing remarks to database")
         log.warning("%s" % e)
@@ -323,31 +333,3 @@ def perform_sobek_simulation(conn, scenario_id, task_id, timeout, project_name='
 
     result[0] = int(result[0])
     return result
-
-def main(options, args):
-    """translates options to connection + scenario_id, then calls perform_sobek_simulation
-    """
-
-    log.setLevel(options.loglevel)
-
-    from django.db import connection
-
-    # the following will not work as the amount of parameters is not
-    # correct.  but I do not know where to get the task_id from so I
-    # will leave it as it is: not working...
-    perform_sobek_simulation(connection, options.scenario, options.timeout)
-
-if __name__ == '__main__':
-
-    import logging
-    from optparse import OptionParser
-    parser = OptionParser()
-
-    parser.add_option('--scenario', help='the ID of the scenario to be computed', type='int')
-
-    parser.add_option('--timeout', default=3600, type='int', help='timeout in seconds before killing simulate.exe')
-    parser.add_option('--debug', help='be extremely verbose', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO)
-    parser.add_option('--quiet', help='be extremely silent', action='store_const', dest='loglevel', const=logging.WARNING)
-
-    (options, args) = parser.parse_args()
-    main(options, args)

@@ -31,6 +31,9 @@
 #*
 #* initial programmer :  Mario Frasca
 #* initial date       :  20081210
+#* changed by         :  Alexandr Seleznev
+#* changed at         :  20120601
+#* changes            :  integration with django, pylint, pep8
 #**********************************************************************
 
 __revision__ = "$Rev: 9992 $"[6:-2]
@@ -43,13 +46,6 @@ import logging
 log = logging.getLogger('nens')
 
 import nens.asc
-
-# if __name__ == '__main__':
-#     sys.path.append('..')
-
-#     from django.core.management import setup_environ
-#     import lizard.settings
-#     setup_environ(lizard.settings)
 
 from zipfile import ZipFile, ZIP_DEFLATED
 from flooding_lib.models import Scenario, Result, ResultType
@@ -67,13 +63,12 @@ def set_broker_logging_handler(broker_handler=None):
 
 def perform_calculation(scenario_id, tmp_location, timeout=0):
 
-    log.debug("step 0b: get the settings for scenario '%d' out of the database..." % scenario_id)
+    log.debug("step 0b: get the settings for scenario '%d'." % scenario_id)
     log.debug("0b1: scenario_id, region_id, breach_id")
     scenario = Scenario.objects.get(pk=scenario_id)
 
     log.debug("0b2: destination_dir")
     destination_dir = Setting.objects.get(key='DESTINATION_DIR').value
-    #output_dir_name = os.path.join(destination_dir, scenario.get_rel_destdir())
 
     log.debug("0c: resetting to forward-slash")
     location = tmp_location.replace("\\", "/")
@@ -88,7 +83,8 @@ def perform_calculation(scenario_id, tmp_location, timeout=0):
             (1, ['dm1maxd0.asc']),
         ]:
         try:
-            resultloc = scenario.result_set.get(resulttype=ResultType.objects.get(pk=resulttype)).resultloc
+            resultloc = scenario.result_set.get(
+                resulttype=ResultType.objects.get(pk=resulttype)).resultloc
             input_file = ZipFile(os.path.join(destination_dir, resultloc), "r")
 
             for name in names:
@@ -103,14 +99,16 @@ def perform_calculation(scenario_id, tmp_location, timeout=0):
             log.info('inputfile of resulttype %i not found' % resulttype)
             log.debug(','.join(map(str, e.args)))
 
-    log.debug("0g: retrieve dm1maxd0 from gridmaxwaterdepth as to have a default shape.")
+    log.debug(
+        "0g:retrieve dm1maxd0 from gridmaxwaterdepth as to get default shape.")
     def_grid = None
     def_name = 'dm1maxd0.asc'
 
     import stat
     try:
         ref_result = scenario.result_set.filter(resulttype__id=1)[0].resultloc
-        if os.stat(os.path.join(destination_dir, ref_result))[stat.ST_SIZE] == 0:
+        if os.stat(
+            os.path.join(destination_dir, ref_result))[stat.ST_SIZE] == 0:
             log.warning("input file '%s' is empty" % ref_result)
         else:
             input_file = ZipFile(os.path.join(destination_dir, ref_result))
@@ -118,30 +116,35 @@ def perform_calculation(scenario_id, tmp_location, timeout=0):
     except Scenario.DoesNotExist:
         log.warning("Reference grid does not exist")
 
-    log.debug("step 3: use the fls_h.inc (sequence of water levels) into grid_dh.asc (maximum water raise speed)")
+    log.debug("step 3: use the fls_h.inc (sequence of water levels) " \
+                  "into grid_dh.asc (maximum water raise speed)")
 
     input_name = "fls_h.inc"
 
     first_timestamps_generator = nens.asc.AscGrid.xlistFromStream(
-        os.path.join(location, input_name), just_count=True, default_grid=def_grid)
+        os.path.join(location, input_name), just_count=True,
+        default_grid=def_grid)
     first_timestamp, _ = first_timestamps_generator.next()
     second_timestamp, _ = first_timestamps_generator.next()
     delta_t = second_timestamp - first_timestamp
 
-    arrival, arrival_value = nens.asc.AscGrid.firstTimestampWithValue(os.path.join(location, input_name),
-                                                                      default_grid=def_grid)
+    arrival, arrival_value = nens.asc.AscGrid.firstTimestampWithValue(
+        os.path.join(location, input_name), default_grid=def_grid)
     temp = file(os.path.join(location, 'grid_ta.asc'), 'wb')
     arrival.writeToStream(temp)
     temp.close()
 
-    deadly, deadly_value = nens.asc.AscGrid.firstTimestampWithValue(os.path.join(location, input_name), threshold=1.5,
-                                                                    default_grid=def_grid)
+    deadly, deadly_value = nens.asc.AscGrid.firstTimestampWithValue(
+        os.path.join(location, input_name),
+        threshold=1.5, default_grid=def_grid)
     temp = file(location + 'grid_td.asc', 'wb')
     deadly.writeToStream(temp)
     temp.close()
 
-    time_difference = nens.asc.AscGrid.apply(lambda x, y: x - y, deadly, arrival)
-    value_difference = nens.asc.AscGrid.apply(lambda x: x - 0.02, deadly_value)
+    time_difference = nens.asc.AscGrid.apply(
+        lambda x, y: x - y, deadly, arrival)
+    value_difference = nens.asc.AscGrid.apply(
+        lambda x: x - 0.02, deadly_value)
 
     def speedFirstMetersFunction(x_value, y_value):
 
@@ -213,12 +216,14 @@ def perform_calculation(scenario_id, tmp_location, timeout=0):
                             continue  # below deadly
                         if ts[col, row] is None:
                             continue  # value not present for timestamp
-                        speed = speedFirstMetersFunction(value, ts[col, row] - arrival[col, row])  # includes deadly at arrival case
+                        # includes deadly at arrival case
+                        speed = speedFirstMetersFunction(
+                            value, ts[col, row] - arrival[col, row])
                         result[col, row] = max(speed, result[col, row])
         return result
 
-    value_tsgrid = nens.asc.AscGrid.firstTimestamp(location + input_name, threshold=True,
-                                                   default_grid=def_grid)
+    value_tsgrid = nens.asc.AscGrid.firstTimestamp(
+        location + input_name, threshold=True, default_grid=def_grid)
     maxWaterRaiseSpeed = computeMaxSpeed(value_tsgrid)
     temp = file(location + 'grid_ss.asc', 'wb')
     maxWaterRaiseSpeed.writeToStream(temp)
@@ -235,45 +240,19 @@ def perform_calculation(scenario_id, tmp_location, timeout=0):
         resultloc = os.path.join(scenario.get_rel_destdir(), zipfilename)
 
         content = file(os.path.join(location, dirname, filename), 'rb').read()
-        output_file = ZipFile(os.path.join(destination_dir, resultloc), mode="w", compression=ZIP_DEFLATED)
+        output_file = ZipFile(os.path.join(destination_dir, resultloc),
+                              mode="w",
+                              compression=ZIP_DEFLATED)
         output_file.writestr(filename, content)
         output_file.close()
 
-        result, new = scenario.result_set.get_or_create(resulttype=ResultType.objects.get(pk=resulttype))
+        result, new = scenario.result_set.get_or_create(
+            resulttype=ResultType.objects.get(pk=resulttype))
         result.resultloc = resultloc
         result.unit = unit
         result.value = value
         result.save()
 
     log.debug("tasks")
+
     return True
-
-# def main(options, args):
-#     """translates options to connection + scenario_id, then calls perform_calculation
-#     """
-
-#     log.setLevel(options.loglevel)
-
-#     from django.db import connection
-
-#     perform_calculation(connection, 'c:\\temp' , options.scenario, options.year, options.timeout)
-
-
-# if __name__ == '__main__':
-
-#     import logging
-#     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
-
-#     from optparse import OptionParser
-#     parser = OptionParser()
-#     parser.add_option('--hisssm-location', default='C:/Program Files/HIS-SSMv2.4/', help='the root of the his-ssm installation')
-
-#     parser.add_option('--scenario', help='the ID of the scenario to be computed', type='int')
-#     parser.add_option('--year', default=2008, help='the year of simulation data', type='int')
-
-#     parser.add_option('--timeout', default=3600, type='int', help='timeout in seconds before killing HISSSM executable')
-#     parser.add_option('--debug', help='be extremely verbose', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO)
-#     parser.add_option('--quiet', help='be extremely silent', action='store_const', dest='loglevel', const=logging.WARNING)
-
-#     (options, args) = parser.parse_args()
-#     main(options, args)
