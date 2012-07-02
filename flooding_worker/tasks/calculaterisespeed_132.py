@@ -38,24 +38,23 @@ __revision__ = "$Rev: 9992 $"[6:-2]
 """this script computes the water level rise speed needed by the
 module HISSSM.  please refer to Ticket:1092.
 """
-
+import os
 import logging
 log = logging.getLogger('nens')
 
 import nens.asc
 
-if __name__ == '__main__':
-    sys.path.append('..')
+# if __name__ == '__main__':
+#     sys.path.append('..')
 
-    from django.core.management import setup_environ
-    import lizard.settings
-    setup_environ(lizard.settings)
+#     from django.core.management import setup_environ
+#     import lizard.settings
+#     setup_environ(lizard.settings)
 
-from django.db import transaction
 from zipfile import ZipFile, ZIP_DEFLATED
 from flooding_lib.models import Scenario, Result, ResultType
 from flooding_base.models import Setting
-from numpy import nan
+
 
 def set_broker_logging_handler(broker_handler=None):
     """
@@ -65,12 +64,8 @@ def set_broker_logging_handler(broker_handler=None):
     else:
         log.warning("Broker logging handler does not set.")
 
-def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
 
-    import os
-
-    log.debug("step 0a: get a cursor from the database connection")
-    curs = conn.cursor()
+def perform_calculation(scenario_id, tmp_location, timeout=0):
 
     log.debug("step 0b: get the settings for scenario '%d' out of the database..." % scenario_id)
     log.debug("0b1: scenario_id, region_id, breach_id")
@@ -78,7 +73,7 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
 
     log.debug("0b2: destination_dir")
     destination_dir = Setting.objects.get(key='DESTINATION_DIR').value
-    output_dir_name = os.path.join(destination_dir, scenario.get_rel_destdir())
+    #output_dir_name = os.path.join(destination_dir, scenario.get_rel_destdir())
 
     log.debug("0c: resetting to forward-slash")
     location = tmp_location.replace("\\", "/")
@@ -87,10 +82,9 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
 
     log.debug("0f: restore the files from the database.")
 
-
     for resulttype, names in [
-            (15, ['fls_h.inc']),#"fls_import.zip"
-            (18, ['fls_h.inc']),#"fls_import.zip"
+            (15, ['fls_h.inc']),  # "fls_import.zip"
+            (18, ['fls_h.inc']),  # "fls_import.zip"
             (1, ['dm1maxd0.asc']),
         ]:
         try:
@@ -105,10 +99,9 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
                     temp.close()
                 except KeyError:
                     log.debug('file %s not found in archive' % name)
-        except Result.DoesNotExist, e:
-            log.info('inputfile of resulttype %i not found'%resulttype)
-
-
+        except Result.DoesNotExist as e:
+            log.info('inputfile of resulttype %i not found' % resulttype)
+            log.debug(','.join(map(str, e.args)))
 
     log.debug("0g: retrieve dm1maxd0 from gridmaxwaterdepth as to have a default shape.")
     def_grid = None
@@ -129,8 +122,8 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
 
     input_name = "fls_h.inc"
 
-    first_timestamps_generator = nens.asc.AscGrid.xlistFromStream(os.path.join(location , input_name), just_count=True,
-                                                                  default_grid=def_grid)
+    first_timestamps_generator = nens.asc.AscGrid.xlistFromStream(
+        os.path.join(location, input_name), just_count=True, default_grid=def_grid)
     first_timestamp, _ = first_timestamps_generator.next()
     second_timestamp, _ = first_timestamps_generator.next()
     delta_t = second_timestamp - first_timestamp
@@ -193,8 +186,10 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
                     pass
         return result
 
-    speedFirstMeters = nens.asc.AscGrid.apply(speedFirstMetersFunctionLoop, value_difference, time_difference)
-    speedFirstMeters = nens.asc.AscGrid.apply(fillInTheSpeedBlanks, speedFirstMeters, arrival_value)
+    speedFirstMeters = nens.asc.AscGrid.apply(
+        speedFirstMetersFunctionLoop, value_difference, time_difference)
+    speedFirstMeters = nens.asc.AscGrid.apply(
+        fillInTheSpeedBlanks, speedFirstMeters, arrival_value)
     temp = file(location + 'grid_dh.asc', 'wb')
     speedFirstMeters.writeToStream(temp)
     temp.close()
@@ -210,13 +205,15 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
         """
 
         result = value_tsgrid[0][1].copy()
-        for col in range(1, result.ncols+1):
-            for row in range(1, result.nrows+1):
+        for col in range(1, result.ncols + 1):
+            for row in range(1, result.nrows + 1):
                 if arrival[col, row] is not None:
                     for value, ts in value_tsgrid:
-                        if value < 1.5: continue # below deadly
-                        if ts[col, row] is None: continue # value not present for timestamp
-                        speed = speedFirstMetersFunction(value, ts[col, row] - arrival[col, row]) # includes deadly at arrival case
+                        if value < 1.5:
+                            continue  # below deadly
+                        if ts[col, row] is None:
+                            continue  # value not present for timestamp
+                        speed = speedFirstMetersFunction(value, ts[col, row] - arrival[col, row])  # includes deadly at arrival case
                         result[col, row] = max(speed, result[col, row])
         return result
 
@@ -237,13 +234,13 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
 
         resultloc = os.path.join(scenario.get_rel_destdir(), zipfilename)
 
-        content = file(os.path.join(location , dirname , filename), 'rb').read()
-        output_file = ZipFile( os.path.join(destination_dir, resultloc), mode="w", compression=ZIP_DEFLATED)
+        content = file(os.path.join(location, dirname, filename), 'rb').read()
+        output_file = ZipFile(os.path.join(destination_dir, resultloc), mode="w", compression=ZIP_DEFLATED)
         output_file.writestr(filename, content)
         output_file.close()
 
         result, new = scenario.result_set.get_or_create(resulttype=ResultType.objects.get(pk=resulttype))
-        result.resultloc =  resultloc
+        result.resultloc = resultloc
         result.unit = unit
         result.value = value
         result.save()
@@ -251,32 +248,32 @@ def perform_calculation(conn, tmp_location, scenario_id, year, timeout=0):
     log.debug("tasks")
     return True
 
-def main(options, args):
-    """translates options to connection + scenario_id, then calls perform_calculation
-    """
+# def main(options, args):
+#     """translates options to connection + scenario_id, then calls perform_calculation
+#     """
 
-    log.setLevel(options.loglevel)
+#     log.setLevel(options.loglevel)
 
-    from django.db import connection
+#     from django.db import connection
 
-    perform_calculation(connection, 'c:\\temp' , options.scenario, options.year, options.timeout)
+#     perform_calculation(connection, 'c:\\temp' , options.scenario, options.year, options.timeout)
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    import logging
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
+#     import logging
+#     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
 
-    from optparse import OptionParser
-    parser = OptionParser()
-    parser.add_option('--hisssm-location', default='C:/Program Files/HIS-SSMv2.4/', help='the root of the his-ssm installation')
+#     from optparse import OptionParser
+#     parser = OptionParser()
+#     parser.add_option('--hisssm-location', default='C:/Program Files/HIS-SSMv2.4/', help='the root of the his-ssm installation')
 
-    parser.add_option('--scenario', help='the ID of the scenario to be computed', type='int')
-    parser.add_option('--year', default=2008, help='the year of simulation data', type='int')
+#     parser.add_option('--scenario', help='the ID of the scenario to be computed', type='int')
+#     parser.add_option('--year', default=2008, help='the year of simulation data', type='int')
 
-    parser.add_option('--timeout', default=3600, type='int', help='timeout in seconds before killing HISSSM executable')
-    parser.add_option('--debug', help='be extremely verbose', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO)
-    parser.add_option('--quiet', help='be extremely silent', action='store_const', dest='loglevel', const=logging.WARNING)
+#     parser.add_option('--timeout', default=3600, type='int', help='timeout in seconds before killing HISSSM executable')
+#     parser.add_option('--debug', help='be extremely verbose', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO)
+#     parser.add_option('--quiet', help='be extremely silent', action='store_const', dest='loglevel', const=logging.WARNING)
 
-    (options, args) = parser.parse_args()
-    main(options, args)
+#     (options, args) = parser.parse_args()
+#     main(options, args)
