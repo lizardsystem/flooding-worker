@@ -115,8 +115,8 @@ def common_generation(scenario_id, tmp_dir, source_programs):
 
         cm_location = os.path.join(source_dir, "colormappings")
 
-        if result.resulttype.id == 0 and scenario.project.color_mapping_name is not None:
-            color_mapping_name = scenario.project.color_mapping_name
+        if result.resulttype.id == 0 and scenario.main_project.color_mapping_name is not None:
+            color_mapping_name = scenario.main_project.color_mapping_name
         else:
             color_mapping_name = result.resulttype.color_mapping_name
 
