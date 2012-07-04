@@ -72,7 +72,6 @@ def set_broker_logging_handler(broker_handler=None):
 if sys.version_info < (2, 5):
     message = "I think I need version python2.6, was called from %d.%d" % (
         sys.version_info[:2])
-    print message
     log.error(message)
 
 
@@ -757,9 +756,9 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
                     log.debug("save animation with numbers %i tot %i" % (result.firstnr, result.lastnr))
                     animation.save()
 
-        except IOError, e:
+        except IOError as e:
             log.error('error creating source')
-            log.error(e)
+            log.error(','.join(map(str, e.args)))
             if pl_new:
                 pl.delete()
 

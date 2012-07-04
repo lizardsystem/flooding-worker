@@ -19,14 +19,6 @@ from nens.numeric import norm_cdf
 import math
 from nens.asc import AscGrid
 
-if __name__ == '__main__':
-    sys.path.append('..')
-
-    from django.core.management import setup_environ
-    import lizard.settings
-    setup_environ(lizard.settings)
-
-from django.db import transaction
 from zipfile import ZipFile, ZIP_DEFLATED
 from flooding_lib.models import Scenario, Result, ResultType
 from flooding_base.models import Setting

@@ -31,12 +31,22 @@
 #
 # initial programmer :  Mario Frasca
 # initial date       :  <yyyymmdd>
+# changed by         :  Alexandr Seleznev
+# changed at         :  20120601
+# changes            :  integration with django, pylint, pep8
 #***********************************************************************
 
 __revision__ = "$Rev$"[6:-2]
 
-import logging, os, subprocess
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
+from zipfile import ZipFile, ZIP_DEFLATED
+from flooding_lib.models import Scenario, Result, ResultType
+from flooding_base.models import Setting
+
+import os
+import logging
+import subprocess
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(message)s',)
 log = logging.getLogger('nens')
 
 def set_broker_logging_handler(broker_handler=None):
@@ -46,19 +56,6 @@ def set_broker_logging_handler(broker_handler=None):
         log.addHandler(broker_handler)
     else:
         log.warning("Broker logging handler does not set.")
-
-if __name__ == '__main__':
-    sys.path.append('..')
-
-    from django.core.management import setup_environ
-    import lizard.settings
-    setup_environ(lizard.settings)
-
-from django.db import transaction
-from zipfile import ZipFile, ZIP_DEFLATED
-from lizard.flooding.models import Scenario, Result, ResultType
-from lizard.base.models import Setting
-import os
 
 batchDotIni = """[Batch]
 kenmerkModus=2
@@ -110,7 +107,7 @@ def find_first(basedir='.', startswith='', endswith=''):
     log.debug("using first element without checking that there IS a first element.")
     return candidates[0]
 
-def perform_HISSSM_calculation(conn, tmp_location, scenario_id, year, timeout=0):
+def perform_HISSSM_calculation(scenario_id, tmp_location, year, timeout=0):
 
     log.debug("step 0a: get settings")
     scenario = Scenario.objects.get(pk=scenario_id)
@@ -169,8 +166,9 @@ def perform_HISSSM_calculation(conn, tmp_location, scenario_id, year, timeout=0)
                     temp.close()
                 except KeyError:
                     log.debug('file %s not found in archive' % name)
-        except Result.DoesNotExist, e:
+        except Result.DoesNotExist as e:
             log.error('inputfile of resulttype %i not found'%resulttype)
+            log.error(','.join(map(str, e.args)))
             return False
 
     kenmerk = 'lizard_flooding'
@@ -223,29 +221,29 @@ def perform_HISSSM_calculation(conn, tmp_location, scenario_id, year, timeout=0)
     log.debug("task finished")
     return True
 
-def main(options, args):
-    """translates options to connection + scenario_id, then calls perform_sobek_simulation
-    """
-    log.setLevel(options.loglevel)
+# def main(options, args):
+#     """translates options to connection + scenario_id, then calls perform_sobek_simulation
+#     """
+#     log.setLevel(options.loglevel)
 
-    from django.db import connection
+#     from django.db import connection
 
-    perform_HISSSM_calculation(connection, options.hisssm_location, options.scenario, options.year, options.timeout)
+#     perform_HISSSM_calculation(connection, options.hisssm_location, options.scenario, options.year, options.timeout)
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    import logging
-    from optparse import OptionParser
-    parser = OptionParser()
-    parser.add_option('--hisssm-location', default='C:/Program Files/HIS-SSMv2.4/', help='the root of the his-ssm installation')
+#     import logging
+#     from optparse import OptionParser
+#     parser = OptionParser()
+#     parser.add_option('--hisssm-location', default='C:/Program Files/HIS-SSMv2.4/', help='the root of the his-ssm installation')
 
-    parser.add_option('--scenario', help='the ID of the scenario to be computed', type='int')
-    parser.add_option('--year', default=2008, help='the year of simulation data', type='int')
+#     parser.add_option('--scenario', help='the ID of the scenario to be computed', type='int')
+#     parser.add_option('--year', default=2008, help='the year of simulation data', type='int')
 
-    parser.add_option('--timeout', default=3600, type='int', help='timeout in seconds before killing HISSSM executable')
-    parser.add_option('--debug', help='be extremely verbose', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO)
-    parser.add_option('--quiet', help='be extremely silent', action='store_const', dest='loglevel', const=logging.WARNING)
+#     parser.add_option('--timeout', default=3600, type='int', help='timeout in seconds before killing HISSSM executable')
+#     parser.add_option('--debug', help='be extremely verbose', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO)
+#     parser.add_option('--quiet', help='be extremely silent', action='store_const', dest='loglevel', const=logging.WARNING)
 
-    (options, args) = parser.parse_args()
-    main(options, args)
+#     (options, args) = parser.parse_args()
+#     main(options, args)
