@@ -49,6 +49,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',)
 log = logging.getLogger('nens')
 
+
 def set_broker_logging_handler(broker_handler=None):
     """
     """
@@ -89,12 +90,14 @@ hoogbouwveilig=true
 gewenstprijspeil=%(year)s
 """
 
+
 def cp(source, dest):
     in_file = file(source, "rb")
     out_file = file(dest, "wb")
     buf = in_file.read()
     out_file.write(buf)
     out_file.close()
+
 
 def find_first(basedir='.', startswith='', endswith=''):
     """returns the first matching file
@@ -107,10 +110,12 @@ def find_first(basedir='.', startswith='', endswith=''):
     log.debug("using first element without checking that there IS a first element.")
     return candidates[0]
 
-def perform_HISSSM_calculation(scenario_id, tmp_location, year, timeout=0):
+
+def perform_HISSSM_calculation(scenario_id, tmp_location, timeout=0):
 
     log.debug("step 0a: get settings")
     scenario = Scenario.objects.get(pk=scenario_id)
+    year = Setting.objects.get(key='YEAR')
     destination_dir = Setting.objects.get(key='DESTINATION_DIR').value
 
     log.debug("step 0c: get temp location: resetting to forward-slash")
@@ -119,9 +124,9 @@ def perform_HISSSM_calculation(scenario_id, tmp_location, year, timeout=0):
         location += "/"
 
     log.debug("step 0d: find the name of the HISSSM executable")
-    exefile = 'bin/' + find_first(location+'bin/', startswith='hisssm', endswith='.exe')
-    inifile = 'bin/' + find_first(location+'bin/', startswith='hisssm', endswith='.ini')
-    mdbfile = 'data/' + find_first(location+'data/', startswith='ssm', endswith='_2000.mdb')
+    exefile = 'bin/' + find_first(location + 'bin/', startswith='hisssm', endswith='.exe')
+    inifile = 'bin/' + find_first(location + 'bin/', startswith='hisssm', endswith='.ini')
+    mdbfile = 'data/' + find_first(location + 'data/', startswith='ssm', endswith='_2000.mdb')
 
     log.debug("step 1a: cleaning up")
     for subdir, starts, ends in [('bin/', '', '.out',),
@@ -136,7 +141,7 @@ def perform_HISSSM_calculation(scenario_id, tmp_location, year, timeout=0):
 
     for root, dirs, files in os.walk(location + 'demo/scenario1/results/'):
         for filename in files:
-            os.unlink(root+'/'+filename)
+            os.unlink(root + '/' + filename)
     try:
         os.removedirs(os.path.join(location, 'demo/scenario1/results/'))
     except:
@@ -167,7 +172,7 @@ def perform_HISSSM_calculation(scenario_id, tmp_location, year, timeout=0):
                 except KeyError:
                     log.debug('file %s not found in archive' % name)
         except Result.DoesNotExist as e:
-            log.error('inputfile of resulttype %i not found'%resulttype)
+            log.error('inputfile of resulttype %i not found' % resulttype_id)
             log.error(','.join(map(str, e.args)))
             return False
 
@@ -181,7 +186,7 @@ def perform_HISSSM_calculation(scenario_id, tmp_location, year, timeout=0):
     log.debug("step 3: run the external tool")
     log.debug("location = " + location)
     os.chdir(os.path.join(location, "demo"))
-    command_line = ["../"+exefile, "scenario1/batch.ini"]
+    command_line = ["../" + exefile, "scenario1/batch.ini"]
     log.debug('about to spawn the hisssm subprocess')
     child = subprocess.Popen(command_line)
     log.debug("starting to wait for completion of subprocess")
@@ -207,13 +212,14 @@ def perform_HISSSM_calculation(scenario_id, tmp_location, year, timeout=0):
 
         resultloc = os.path.join(scenario.get_rel_destdir(), zipfilename)
 
-        content = file(os.path.join(location , 'demo/scenario1/results', dirname , filename), 'rb').read()
-        output_file = ZipFile( os.path.join(destination_dir, resultloc), mode="w", compression=ZIP_DEFLATED)
+        content = file(os.path.join(location, 'demo/scenario1/results', dirname, filename), 'rb').read()
+        output_file = ZipFile(os.path.join(destination_dir, resultloc), mode="w", compression=ZIP_DEFLATED)
         output_file.writestr(filename, content)
         output_file.close()
 
-        result, new = scenario.result_set.get_or_create(resulttype=ResultType.objects.get(pk=resulttype))
-        result.resultloc =  resultloc
+        result, new = scenario.result_set.get_or_create(
+            resulttype=ResultType.objects.get(pk=resulttype))
+        result.resultloc = resultloc
         result.unit = unit
         result.value = value
         result.save()
