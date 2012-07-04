@@ -7,6 +7,7 @@ __revision__ = "$Rev: 9979 $"[6:-2]
 import logging
 log = logging.getLogger('nens.lizard.kadebreuk.lognormal')
 
+
 def set_broker_logging_handler(broker_handler=None):
     """
     """
@@ -24,10 +25,12 @@ from flooding_lib.models import Scenario, Result, ResultType
 from flooding_base.models import Setting
 import os
 
+
 def oolognormdist(x, m, s):
     """same as openoffice LOGNORMDIST
     """
     return norm_cdf((math.log(x) - m) / s)
+
 
 def combine(w, x, m1, s1, m2, s2, lower, upper):
     """returns oolognormdist(x, m1, s1) if w < lower
@@ -65,9 +68,10 @@ def combine(w, x, m1, s1, m2, s2, lower, upper):
             return ooupper
     fraction = (upper - w) / (upper - lower)
 
-    return fraction * oolower + (1.0-fraction) * ooupper
+    return fraction * oolower + (1.0 - fraction) * ooupper
 
-def calc_mortality_grid(stijg,depth):
+
+def calc_mortality_grid(stijg, depth):
 
     result = stijg.copy()
     for col in range(len(stijg)):
@@ -75,19 +79,19 @@ def calc_mortality_grid(stijg,depth):
             stijg_value = stijg[col][row]
             depth_value = depth[col][row]
             try:
-                result[col][row] = combine(stijg_value, depth_value, 7.6, 2.75, 1.46, 0.28, 0.5, 4.0)
+                result[col][row] = combine(
+                    stijg_value, depth_value, 7.6, 2.75, 1.46, 0.28, 0.5, 4.0)
             except TypeError:
                 result[col][row] = 0
                 pass
     return result
 
 
-def perform_calculation(tmp_location, scenario_id, year, timeout=0):
+def perform_calculation(scenario_id, tmp_location, timeout=0):
 
     log.debug("step 0a: get settings")
     scenario = Scenario.objects.get(pk=scenario_id)
     destination_dir = Setting.objects.get(key='DESTINATION_DIR').value
-
 
     log.debug("step 0c: get temp location: resetting to forward-slash")
     location = tmp_location.replace("\\", "/")
@@ -100,7 +104,8 @@ def perform_calculation(tmp_location, scenario_id, year, timeout=0):
         (19, ['grid_dh.asc', 'Grid_dh.asc']),
         ]:
         try:
-            resultloc = scenario.result_set.get(resulttype=ResultType.objects.get(pk=resulttype)).resultloc
+            resultloc = scenario.result_set.get(
+                resulttype=ResultType.objects.get(pk=resulttype)).resultloc
             input_file = ZipFile(os.path.join(destination_dir, resultloc), "r")
 
             for name in names:
@@ -111,11 +116,13 @@ def perform_calculation(tmp_location, scenario_id, year, timeout=0):
                     temp.close()
                 except KeyError:
                     log.debug('file %s not found in archive' % name)
-        except Result.DoesNotExist, e:
-            log.error('inputfile of resulttype %i not found'%resulttype)
+        except Result.DoesNotExist as e:
+            log.error('inputfile of resulttype %i not found' % resulttype)
+            log.error(','.join(map(str, e.args)))
             return False
 
-    log.debug("step 3: use the fls_h.inc (sequence of water levels) into grid_dh.asc (maximum water raise speed)")
+    log.debug("step 3: use the fls_h.inc (sequence of water levels) " \
+                  "into grid_dh.asc (maximum water raise speed)")
 
     grid_dh = AscGrid(file(os.path.join(location, 'grid_dh.asc')))
     dm1maxd0 = AscGrid(file(os.path.join(location, 'dm1maxd0.asc')))
@@ -133,13 +140,16 @@ def perform_calculation(tmp_location, scenario_id, year, timeout=0):
 
         resultloc = os.path.join(scenario.get_rel_destdir(), zipfilename)
 
-        content = file(os.path.join(location , dirname , filename), 'rb').read()
-        output_file = ZipFile( os.path.join(destination_dir, resultloc), mode="w", compression=ZIP_DEFLATED)
+        content = file(
+            os.path.join(location, dirname, filename), 'rb').read()
+        output_file = ZipFile(os.path.join(destination_dir, resultloc),
+                              mode="w", compression=ZIP_DEFLATED)
         output_file.writestr(filename, content)
         output_file.close()
 
-        result, new = scenario.result_set.get_or_create(resulttype=ResultType.objects.get(pk=resulttype))
-        result.resultloc =  resultloc
+        result, new = scenario.result_set.get_or_create(
+            resulttype=ResultType.objects.get(pk=resulttype))
+        result.resultloc = resultloc
         result.unit = unit
         result.value = value
         result.save()
