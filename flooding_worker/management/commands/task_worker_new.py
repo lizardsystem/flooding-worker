@@ -34,7 +34,7 @@ class Command(BaseCommand):
                     type='str',
                     default='DEBUG'),
         make_option('--worker_nr',
-                    help='use this if you need more than one ' /
+                    help='use this if you need more than one '\
                     'uitvoerder on this workstation',
                     type='int',
                     default=1))
