@@ -4,6 +4,7 @@
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
+from flooding_worker.file_logging import setFileHandler, removeFileHandlers
 from flooding_worker.worker.worker import Worker
 from flooding_worker.worker.action_task import ActionTask
 from flooding_worker.worker.broker_connection import BrokerConnection
@@ -33,7 +34,8 @@ class Command(BaseCommand):
                     type='str',
                     default='DEBUG'),
         make_option('--worker_nr',
-                    help='use this if you need more than one uitvoerder on this workstation',
+                    help='use this if you need more than one ' /
+                    'uitvoerder on this workstation',
                     type='int',
                     default=1))
 
@@ -51,6 +53,9 @@ class Command(BaseCommand):
         broker = BrokerConnection()
         connection = broker.connect_to_broker()
 
+        removeFileHandlers()
+        setFileHandler(options["worker_nr"])
+
         if connection is None:
             log.error("Could not connect to broker.")
             return
@@ -60,8 +65,8 @@ class Command(BaseCommand):
                             options["worker_nr"])
 
         logging.handlers.AMQPMessageHandler = AMQPMessageHandler
-        broker_logging_handler = logging.handlers.AMQPMessageHandler(action,
-                                                                     numeric_level)
+        broker_logging_handler = logging.handlers.AMQPMessageHandler(
+            action, numeric_level)
         action.set_broker_logging_handler(broker_logging_handler)
 
         task_worker = Worker(connection,

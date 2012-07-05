@@ -4,6 +4,7 @@
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
+from flooding_worker.file_logging import setFileHandler, removeFileHandlers
 from flooding_worker.worker.worker import Worker
 from flooding_worker.worker.action_logging import ActionLogging
 from flooding_worker.worker.broker_connection import BrokerConnection
@@ -32,6 +33,9 @@ class Command(BaseCommand):
 
         broker = BrokerConnection()
         connection = broker.connect_to_broker()
+
+        removeFileHandlers()
+        setFileHandler('logging')
 
         if connection is None:
             log.error("Could not connect to broker.")

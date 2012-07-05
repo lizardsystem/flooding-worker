@@ -4,12 +4,14 @@
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
+from flooding_worker.file_logging import setFileHandler, removeFileHandlers
 from flooding_worker.worker.action_workflow import ActionWorkflow
 from flooding_worker.worker.broker_connection import BrokerConnection
 from flooding_worker.worker.message_logging_handler import AMQPMessageHandler
 
 import logging
 log = logging.getLogger("flooding.management.start_scenario")
+
 
 class Command(BaseCommand):
 
@@ -47,6 +49,9 @@ class Command(BaseCommand):
         broker = BrokerConnection()
         connection = broker.connect_to_broker()
 
+        removeFileHandlers()
+        setFileHandler('start')
+
         if connection is None:
             log.error("Could not connect to broker.")
             return
@@ -55,7 +60,8 @@ class Command(BaseCommand):
             connection, options["scenario_id"], options["workflowtemplate_id"])
 
         logging.handlers.AMQPMessageHandler = AMQPMessageHandler
-        broker_handler = logging.handlers.AMQPMessageHandler(action, numeric_level)
+        broker_handler = logging.handlers.AMQPMessageHandler(action,
+                                                             numeric_level)
 
         action.set_broker_logging_handler(broker_handler)
         action.perform_workflow()
