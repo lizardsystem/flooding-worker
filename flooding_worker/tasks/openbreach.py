@@ -165,11 +165,8 @@ class Scenario:
             os.makedirs(tmp_dir)
         else:
             files = os.listdir(tmp_dir)
-            print files
             for fil in files:
-                print fil
                 if os.path.isfile(os.path.join(tmp_dir,fil)):
-                    print 'remove'
                     os.remove(os.path.join(tmp_dir,fil))
 
 
@@ -798,10 +795,7 @@ class Scenario:
                 pass
 
             if frict_grid:
-                print frict_grid_name
-
                 self.new_frict_name = new_frict_name = '../WORK/grid/' + frict_grid.srcname
-                print new_frict_name
                 self.pool['friction.dat']['D2FR', domain_id]['mt cp'][1] = new_frict_name
                 self.pool['network.ntw'].replace(frict_grid_name, new_frict_name)
 
@@ -821,11 +815,9 @@ class Scenario:
             raise ValueError("the 'intern' point is really outside of the grid")
 
         if elev_grid[self.breach.internalnode.coords] is None:
-            print 'ooo'
-            #raise ValueError("the 'intern' point is on an invalid pixel of the grid")
+            raise ValueError("the 'intern' point is on an invalid pixel of the grid")
 
         log.info(str(elev_grid[self.breach.externalnode.coords]))
-        print type(str(elev_grid[self.breach.externalnode.coords]))
 
         if elev_grid[self.breach.externalnode.coords] not in (False, None):
 
@@ -992,7 +984,6 @@ class Scenario:
                     ds = None
 
         finally:
-            #print "Unexpected error:", sys.exc_info()[0]
             ds = None
             dst_ds = None
             adjustment_grid = None

@@ -433,7 +433,6 @@ def main(options, args):
             raise
         except IOError, e:
             log.warning("can't uncompress this.  uncompress manually to '%s' and try again" % options.basedir)
-            print e
 
     if options.unpack_and_stop:
         log.info("finished unpacking and requested not to do more")

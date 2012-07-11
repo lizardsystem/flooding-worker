@@ -26,9 +26,6 @@
 __revision__ = "$Rev: 7947 $"[6:-2]
 
 import sys
-if sys.version_info < (2, 4):
-    print "I think I need version python2.4 and I was called from %d.%d" % sys.version_info[:2]
-
 import logging
 
 log = logging.getLogger('nens.lizard.kadebreuk.embankment.dammage')
@@ -159,7 +156,6 @@ def calc_damage(scenario_id):
         os.remove(dest_shape_full.replace('.shp','.dbf'))
         os.remove(dest_shape_full.replace('.shp','.prj'))
 
-    print
     dest = drv.CreateDataSource( str(dest_shape_full) )
     dest_srs = osr.SpatialReference()
     dest_srs.ImportFromProj4('+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over')

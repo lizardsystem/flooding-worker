@@ -564,10 +564,8 @@ def get_or_create_value_presentation_source(
                 source.save()
                 get_animation_info = True
 
-            except IOError, e:
+            except IOError as e:
                 source.delete()
-                print 'error creating source'
-                print str(e)
                 raise IOError(e)
 
         if get_animation_info:
