@@ -10,6 +10,7 @@ Changelog of flooding-worker
 
 - Added 'parent_code' field to WorkflowTemplateTask to define a task's tree.
 
+- Deleted 'sequence' field.
 
 0.6.2 (2012-06-28)
 ------------------

@@ -8,12 +8,24 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
+        # Deleting field 'WorkflowTask.sequence'
+        db.delete_column('flooding_worker_workflowtask', 'sequence')
+
+        # Deleting field 'WorkflowTemplateTask.sequence'
+        db.delete_column('flooding_worker_workflowtemplatetask', 'sequence')
+
         # Adding field 'WorkflowTemplateTask.parent_code'
         db.add_column('flooding_worker_workflowtemplatetask', 'parent_code', self.gf('django.db.models.fields.related.ForeignKey')(related_name='parent_task_code', null=True, to=orm['flooding_worker.TaskType']), keep_default=False)
 
 
     def backwards(self, orm):
         
+        # Adding field 'WorkflowTask.sequence'
+        db.add_column('flooding_worker_workflowtask', 'sequence', self.gf('django.db.models.fields.IntegerField')(default=1), keep_default=False)
+
+        # Adding field 'WorkflowTemplateTask.sequence'
+        db.add_column('flooding_worker_workflowtemplatetask', 'sequence', self.gf('django.db.models.fields.IntegerField')(default=1), keep_default=False)
+
         # Deleting field 'WorkflowTemplateTask.parent_code'
         db.delete_column('flooding_worker_workflowtemplatetask', 'parent_code_id')
 
@@ -29,7 +41,7 @@ class Migration(SchemaMigration):
             'workflow': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['flooding_worker.Workflow']"})
         },
         'flooding_worker.tasktype': {
-            'Meta': {'object_name': 'TaskType'},
+            'Meta': {'ordering': "('name',)", 'object_name': 'TaskType'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
@@ -50,7 +62,6 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'max_duration_minutes': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'max_failures': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'sequence': ('django.db.models.fields.IntegerField', [], {}),
             'successful': ('django.db.models.fields.NullBooleanField', [], {'null': 'True', 'blank': 'True'}),
             'tfinished': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'tstart': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
@@ -68,7 +79,6 @@ class Migration(SchemaMigration):
             'max_duration_minutes': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'max_failures': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'parent_code': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'parent_task_code'", 'null': 'True', 'to': "orm['flooding_worker.TaskType']"}),
-            'sequence': ('django.db.models.fields.IntegerField', [], {}),
             'workflow_template': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['flooding_worker.WorkflowTemplate']"})
         }
     }
