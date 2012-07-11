@@ -92,7 +92,7 @@ class ActionWorkflow(Action):
         task_failures = {}
 
         for task in self.bulk_tasks:
-            instruction[task.code.name] = task.parent_code
+            instruction[task.code.name] = task.parent_code.name
             workflow_tasks[task.code.name] = task.id
             task_failures[task.code.name] = task.max_failures
 
