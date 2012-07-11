@@ -51,6 +51,14 @@ class Action(object):
         """Retrieves queue info from brokerconfig file."""
         return settings.QUEUES.get(task_code, None)
 
+    def root_queues(self):
+        """Retrieve root queues from task's body."""
+        queues = []
+        for queue in self.body["instruction"]:
+            if queue_code == parent_code:
+                queues.append(queue_code)
+        return queues
+
     def next_queues(self):
         """
         Recovers queues(s) of next task(s)
@@ -61,6 +69,8 @@ class Action(object):
         current_queue = self.body["curr_task_code"]
         queues = []
         for (queue_code, parent_code) in instruction.iteritems():
+            if queue_code == parent_code:
+                continue
             if current_code = parrent_code:
                 queues.append(queue_code)
         return queues

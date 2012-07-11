@@ -116,8 +116,7 @@ class ActionWorkflow(Action):
         """Sends trigger and logging messages to broker."""
         self.log.info("Start workflow")
 
-        queues = self.next_queues()
-        self.increase_sequence()
+        queues = self.root_queues()
         for queue in queues:
             self.set_current_task(queue)
             self.send_trigger_message(self.body,
