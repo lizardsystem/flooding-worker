@@ -65,7 +65,6 @@ class Action(object):
         Recovers queues(s) of next task(s)
         by increasing the sequence.
         """
-        #next_sequence = int(self.body["next_sequence"]) + 1
         instruction = self.body["instruction"]
         current_queue = self.body["curr_task_code"]
         queues = []

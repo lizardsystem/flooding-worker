@@ -107,7 +107,6 @@ class ActionWorkflow(Action):
         option["curr_log_level"] = ""
         option["message"] = ""
         option["event_time"] = ""
-        option["next_sequence"] = 0
         return option
 
     def start_workflow(self):
