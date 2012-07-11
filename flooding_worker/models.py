@@ -57,15 +57,15 @@ class TaskType(models.Model):
 
     class Meta:
         db_table = 'flooding_worker_tasktype'
+        ordering = ('name',)
 
 
 class WorkflowTemplateTask(models.Model):
     code = models.ForeignKey(TaskType)
-    sequence = models.IntegerField()
-    max_failures = models.IntegerField(default=0)
     parent_code = models.ForeignKey(
         TaskType, null=True, related_name='parent_task_code',
         help_text="Define a task's tree, None = end of the tree.")
+    max_failures = models.IntegerField(default=0)
     max_duration_minutes = models.IntegerField(default=0)
     workflow_template = models.ForeignKey(WorkflowTemplate)
 
@@ -79,7 +79,6 @@ class WorkflowTemplateTask(models.Model):
 class WorkflowTask(models.Model):
     workflow = models.ForeignKey(Workflow)
     code = models.ForeignKey(TaskType)
-    sequence = models.IntegerField()
     max_failures = models.IntegerField(default=0)
     max_duration_minutes = models.IntegerField(default=0)
     tstart = models.DateTimeField(blank=True, null=True)
