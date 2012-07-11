@@ -92,9 +92,9 @@ class ActionWorkflow(Action):
         task_failures = {}
 
         for task in self.bulk_tasks:
-            if task.sequence == 0:
+            if task.code == task.parent_code:
                 option["curr_task_code"] = task.code.name
-            instruction[task.code.name] = task.sequence
+            instruction[task.code.name] = task.parent_code
             workflow_tasks[task.code.name] = task.id
             task_failures[task.code.name] = task.max_failures
 

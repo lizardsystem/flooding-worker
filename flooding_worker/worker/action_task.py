@@ -64,7 +64,6 @@ class ActionTask(Action):
         Sends triggers to next queue(s).
         """
         queues = self.next_queues()
-        self.increase_sequence()
         for queue in queues:
             self.set_current_task(queue)
             self.send_trigger_message(self.body,

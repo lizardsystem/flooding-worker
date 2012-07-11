@@ -56,16 +56,14 @@ class Action(object):
         Recovers queues(s) of next task(s)
         by increasing the sequence.
         """
-        next_sequence = int(self.body["next_sequence"]) + 1
+        #next_sequence = int(self.body["next_sequence"]) + 1
         instruction = self.body["instruction"]
+        current_queue = self.body["curr_task_code"]
         queues = []
-        for (queue_code, sequence) in instruction.iteritems():
-            if int(sequence) == next_sequence:
+        for (queue_code, parent_code) in instruction.iteritems():
+            if current_code = parrent_code:
                 queues.append(queue_code)
         return queues
-
-    def increase_sequence(self):
-        self.body["next_sequence"] = int(self.body["next_sequence"]) + 1
 
     def set_current_task(self, queue):
         self.body["curr_task_code"] = queue
