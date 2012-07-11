@@ -84,8 +84,6 @@ class ActionTask(Action):
         to the failed queue.
         """
         self.decrease_failures()
-        print "-----------------------------"
-        print int(self.body["max_failures_tmp"][self.task_code])
         if int(self.body["max_failures_tmp"][self.task_code]) >= 0:
             ch.basic_publish(exchange=method.exchange,
                              routing_key=method.routing_key,

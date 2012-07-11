@@ -8,6 +8,8 @@ Changelog of flooding-worker
 - Added functionality to replace FileHandler of the root logger with a
   specific FileHandler per worker.
 
+- Added 'parent_code' field to WorkflowTemplateTask to define a task's tree.
+
 
 0.6.2 (2012-06-28)
 ------------------
