@@ -68,7 +68,7 @@ class ActionWorkflow(Action):
             for template_task in template_tasks:
                 task = WorkflowTask(workflow=self.workflow,
                                     code=template_task.code,
-                                    sequence=template_task.sequence,
+                                    parent_code=template_task.parent_code,
                                     max_failures=template_task.max_failures,
                                     max_duration_minutes=template_task.max_duration_minutes)
                 task.save()
@@ -92,8 +92,6 @@ class ActionWorkflow(Action):
         task_failures = {}
 
         for task in self.bulk_tasks:
-            if task.code == task.parent_code:
-                option["curr_task_code"] = task.code.name
             instruction[task.code.name] = task.parent_code
             workflow_tasks[task.code.name] = task.id
             task_failures[task.code.name] = task.max_failures

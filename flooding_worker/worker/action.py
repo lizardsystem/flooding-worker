@@ -54,7 +54,8 @@ class Action(object):
     def root_queues(self):
         """Retrieve root queues from task's body."""
         queues = []
-        for queue in self.body["instruction"]:
+        instruction = self.body["instruction"]
+        for (queue_code, parent_code) in instruction.iteritems():
             if queue_code == parent_code:
                 queues.append(queue_code)
         return queues
@@ -71,7 +72,7 @@ class Action(object):
         for (queue_code, parent_code) in instruction.iteritems():
             if queue_code == parent_code:
                 continue
-            if current_code = parrent_code:
+            if current_queue == parrent_code:
                 queues.append(queue_code)
         return queues
 

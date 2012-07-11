@@ -79,6 +79,9 @@ class WorkflowTemplateTask(models.Model):
 class WorkflowTask(models.Model):
     workflow = models.ForeignKey(Workflow)
     code = models.ForeignKey(TaskType)
+    parent_code = models.ForeignKey(
+        TaskType, null=True, related_name='workflowtask_parent_task_code',
+        help_text="Define a task's tree, None = end of the tree.")
     max_failures = models.IntegerField(default=0)
     max_duration_minutes = models.IntegerField(default=0)
     tstart = models.DateTimeField(blank=True, null=True)
