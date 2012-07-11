@@ -71,7 +71,7 @@ class Action(object):
         for (queue_code, parent_code) in instruction.iteritems():
             if queue_code == parent_code:
                 continue
-            if current_queue == parrent_code:
+            if current_queue == parent_code:
                 queues.append(queue_code)
         return queues
 
