@@ -216,7 +216,7 @@ def perform_sobek_simulation(scenario_id,
 
     log.debug("empty project_dir WORK & 1")
     for to_empty in [work_dir, case_1_dir, cmtwork_dir]:
-        for root, dirs, files in os.walk(os.sep.join(to_empty)):
+        for root, dirs, files in os.walk(to_empty):
             for name in files:
                 os.remove(os.path.join(root, name))
 
@@ -334,5 +334,5 @@ def perform_sobek_simulation(scenario_id,
     log.info(remarks)
 
 
-    successful = int(re.findall(r'\d+', remarks))[0] == 0
+    successful = int(re.findall(r'\d+', remarks)[0]) == 0
     return successful
