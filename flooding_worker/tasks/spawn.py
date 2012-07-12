@@ -38,20 +38,23 @@ for more details.
 import time
 import os  # used throughout the code...
 import logging
+import subprocess
+import threading
+import re
 logging.basicConfig(
     level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
 log = logging.getLogger('nens')
 
-from flooding_lib.models import Scenario, ResultType, Task
+from flooding_lib.models import Scenario, ResultType
 from flooding_base.models import Setting
 
 from zipfile import ZipFile, ZIP_DEFLATED
 
 default_sobek_locations = {
-    'v2.09': 'e:/sobek209/',
-    'v2.10': 'e:/sobek210/',
-    'v2.11': 'e:/sobek211/',
-    'v2.12': 'e:/sobek212/',
+    'v2.09': 'sobek209/',
+    'v2.10': 'sobek210/',
+    'v2.11': 'sobek211/',
+    'v2.12': 'sobek212/',
     }
 
 
@@ -175,8 +178,11 @@ def set_broker_logging_handler(broker_handler=None):
         log.warning("Broker logging handler does not set.")
 
 
-def perform_sobek_simulation(scenario_id, task_id, timeout,
-                             project_name='lizardkb'):
+def perform_sobek_simulation(scenario_id,
+                             sobek_project_directory,
+                             sobek_program_root,
+                             project_name='lizardkb',
+                             timeout=288000):
     """task 130: perform_sobek_simulation
     """
 
@@ -184,20 +190,22 @@ def perform_sobek_simulation(scenario_id, task_id, timeout,
 
     scenario = Scenario.objects.get(pk=scenario_id)
 
-    sobek_location = default_sobek_locations[scenario.sobekmodel_inundation.sobekversion.name[:5]]
-    sobek_location = [d for d in sobek_location.split('/') if d]
+    sobek_location = os.path.join(
+        sobek_program_root,
+        default_sobek_locations[scenario.sobekmodel_inundation.sobekversion.name[:5]])
+    #sobek_location = [d for d in sobek_location.split('/') if d]
 
     destination_dir = Setting.objects.get(key='DESTINATION_DIR').value
     source_dir = Setting.objects.get(key='SOURCE_DIR').value
 
-    project_dir = sobek_location + [project_name + '.lit']
+    project_dir = os.path.join(sobek_location, sobek_project_directory)
 
     log.debug("compute the local location of sobek files")
     # first keep all paths as lists of elements, will join them using
     # os.sep at the latest possible moment.
-    case_1_dir = project_dir + ['1']
-    work_dir = project_dir + ['WORK']
-    cmtwork_dir = project_dir + ['CMTWORK']
+    case_1_dir = os.path.join(project_dir, '1')
+    work_dir = os.path.join(project_dir + ['WORK'])
+    cmtwork_dir = os.path.join(project_dir + ['CMTWORK'])
 
     output_dir_name = os.path.join(destination_dir, scenario.get_rel_destdir())
     model_file_location = os.path.join(
@@ -245,12 +253,12 @@ def perform_sobek_simulation(scenario_id, task_id, timeout,
     log.debug('about to spawn the simulate subprocess')
     cmd, cwd = [program_name, configuration], os.sep.join(cmtwork_dir)
     log.debug('command_list: %s, current_dir: %s' % (cmd, cwd))
-    import subprocess
+
     os.chdir(cwd)
     child = subprocess.Popen(cmd)
 
     log.debug('about to start the watchdog thread')
-    import threading
+
     watchdog_t = threading.Thread(target=watchdog, args=(child, cmtwork_dir))
     watchdog_t.start()
 
@@ -267,7 +275,7 @@ def perform_sobek_simulation(scenario_id, task_id, timeout,
     max_file_nr = {}
     min_file_nr = {}
     resulttypes = ResultType.objects.filter(program=1)
-    import re
+
     matcher_destination = [(r.id, re.compile(r.content_names_re, re.I),
                             ZipFile(os.path.join(output_dir_name, r.name + '.zip'),
                                     mode="w", compression=ZIP_DEFLATED),
@@ -303,7 +311,8 @@ def perform_sobek_simulation(scenario_id, task_id, timeout,
         # table results
         result, new = scenario.result_set.get_or_create(
             resulttype=ResultType.objects.get(pk=resulttype_id))
-        result.resultloc = os.path.join(scenario.get_rel_destdir(), name + '.zip')
+        result.resultloc = os.path.join(
+            scenario.get_rel_destdir(), name + '.zip')
         result.firstnr = min_file_nr.get(resulttype_id)
         result.lastnr = max_file_nr.get(resulttype_id)
         result.save()
@@ -319,17 +328,7 @@ def perform_sobek_simulation(scenario_id, task_id, timeout,
 
     remarks = 'rev: ' + __revision__ + "\n" + remarks
 
-    try:
-        task = Task.objects.get(pk=task_id)
-        task.remarks = remarks
-        task.save()
-        # the first two lines of the original content of PLUVIUS1
-        result = remarks.split('\n')[1:3]
-    except Exception, e:
-        log.warning("error writing remarks to database")
-        log.warning("%s" % e)
-        result = [' 51', 'error writing remarks to database']
-    #finally: is not present in python 2.4
+    log.info(remarks)
 
     result[0] = int(result[0])
     return result

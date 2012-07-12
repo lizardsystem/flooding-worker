@@ -36,13 +36,13 @@ def perform_task(
 
     #settings.py:
     hisssm_root = settings.HISSSM_ROOT
-    sobek_program_root = settings.SOBEK_PROGRAM_ROOT
-    sobek_project_root = settings.SOBEK_PROJECT_ROOT
+    sobek_program_root = settings.SOBEK_PROGRAM_ROOT  # e: or c:
+    #sobek_project_root = settings.SOBEK_PROJECT_ROOT
     tmp_root = settings.TMP_ROOT
 
     tmp_directory = os.path.join(tmp_root, str(worker_nr))
     sobek_project_directory = os.path.join(
-        sobek_project_root, 'lzfl_%03d' % worker_nr)
+         'lzfl_%03d.lit' % worker_nr)
 
     try:
         success_code = False
