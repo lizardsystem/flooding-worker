@@ -74,7 +74,7 @@ def kill(pid):
     return result
 
 
-def watchdog(child, cmtwork_dir, ):
+def watchdog(child, cmtwork_dir):
     """keep running until the simulate program has written to the
 PLUVIUS1.rtn file, then kill the subprocess in case it's still
 running.  does not return a value and does not check whether the
@@ -82,6 +82,7 @@ computation was successful.  here we are only interested in
 terminating the subprocess when the computation is completed.
     """
 
+    log.debug('inside watchdog cmtwork_dir %s, %s' % (type(cmtwork_dir), cmtwork_dir))
     # keep ignoring code 51 while warming up.  warming up ends as soon
     # as a different code appears or after 20 seconds.
     warming_up = 20
@@ -260,7 +261,7 @@ def perform_sobek_simulation(scenario_id,
     child = subprocess.Popen(cmd)
 
     log.debug('about to start the watchdog thread')
-
+    log.debug('cmtwork_dir %s, %s' % (type(cmtwork_dir), cmtwork_dir))
     watchdog_t = threading.Thread(target=watchdog, args=(child, cmtwork_dir))
     watchdog_t.start()
 
