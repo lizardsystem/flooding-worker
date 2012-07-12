@@ -86,7 +86,7 @@ terminating the subprocess when the computation is completed.
     # as a different code appears or after 20 seconds.
     warming_up = 20
 
-    file_to_monitor = os.sep.join(cmtwork_dir + ['PLUVIUS1.rtn'])
+    file_to_monitor = os.path.join(cmtwork_dir, 'PLUVIUS1.rtn')
     last_stat = None
     text = ' 51\nstill warming up'
 
@@ -103,7 +103,7 @@ terminating the subprocess when the computation is completed.
                 # reading it may cause an exception if 'simulate' is
                 # still writing to the file.  no problem: we will
                 # check at next step.
-                input = open(os.sep.join(cmtwork_dir + ['PLUVIUS1.rtn']))
+                input = open(os.path.join(cmtwork_dir, 'PLUVIUS1.rtn'))
                 text = input.readlines()
                 input.close()
 
@@ -152,7 +152,7 @@ terminating the subprocess when the computation is completed.
     log.debug("watchdog thinks the child ended but will kill it to make sure.")
     if kill(child.pid) is not None:
         log.debug("it was a good idea to kill the child.")
-        output = open(os.sep.join(cmtwork_dir + ['PLUVIUS1.rtn']), "w")
+        output = open(os.path.join(cmtwork_dir, 'PLUVIUS1.rtn'), "w")
         output.write(" 51\nSimulation interrupted by spawning script\n\n")
         output.close()
 
@@ -323,7 +323,7 @@ def perform_sobek_simulation(scenario_id,
 
     log.debug("check return code and return False if not ok")
     try:
-        output = file(os.sep.join(cmtwork_dir + ['PLUVIUS1.rtn']), "r")
+        output = file(os.path.join(cmtwork_dir, 'PLUVIUS1.rtn'), "r")
         remarks = output.read()
     except:
         remarks = ' 51\nerror reading output file'
