@@ -187,6 +187,8 @@ def perform_sobek_simulation(scenario_id,
     """
 
     log.debug("step 0a: get settings")
+    log.debug("sobek_project_directory: %s" % sobek_project_directory)
+    log.debug("sobek_program_root: %s" % sobek_program_root)
 
     scenario = Scenario.objects.get(pk=scenario_id)
 
@@ -194,18 +196,18 @@ def perform_sobek_simulation(scenario_id,
         sobek_program_root,
         default_sobek_locations[scenario.sobekmodel_inundation.sobekversion.name[:5]])
     #sobek_location = [d for d in sobek_location.split('/') if d]
-
+    log.debug("sobek_location: %s" % sobek_location)
     destination_dir = Setting.objects.get(key='DESTINATION_DIR').value
     source_dir = Setting.objects.get(key='SOURCE_DIR').value
 
     project_dir = os.path.join(sobek_location, sobek_project_directory)
-
+    log.debug("project_dir: %s" % project_dir)
     log.debug("compute the local location of sobek files")
     # first keep all paths as lists of elements, will join them using
     # os.sep at the latest possible moment.
     case_1_dir = os.path.join(project_dir, '1')
-    work_dir = os.path.join(project_dir + ['WORK'])
-    cmtwork_dir = os.path.join(project_dir + ['CMTWORK'])
+    work_dir = os.path.join(project_dir, 'WORK')
+    cmtwork_dir = os.path.join(project_dir, 'CMTWORK')
 
     output_dir_name = os.path.join(destination_dir, scenario.get_rel_destdir())
     model_file_location = os.path.join(
@@ -222,16 +224,16 @@ def perform_sobek_simulation(scenario_id,
     input_file = ZipFile(model_file_location, "r")
 
     log.debug("unpacking the archived sobek model to project_dir WORK & 1")
-    if not os.path.isdir(os.sep.join(work_dir + ['grid'])):
-        os.makedirs(os.sep.join(work_dir + ['grid']))
-    if not os.path.isdir(os.sep.join(case_1_dir + ['grid'])):
-        os.makedirs(os.sep.join(case_1_dir + ['grid']))
+    if not os.path.isdir(os.path.join(work_dir, 'grid')):
+        os.makedirs(os.path.join(work_dir, 'grid'))
+    if not os.path.isdir(os.path.join(case_1_dir, 'grid')):
+        os.makedirs(os.path.join(case_1_dir, 'grid'))
     for name in input_file.namelist():
         content = input_file.read(name)
-        temp = file(os.sep.join(work_dir + [name]), "wb")
+        temp = file(os.path.join(work_dir, name), "wb")
         temp.write(content)
         temp.close()
-        temp = file(os.sep.join(case_1_dir + [name]), "wb")
+        temp = file(os.path.join(case_1_dir, name), "wb")
         temp.write(content)
         temp.close()
 
@@ -240,18 +242,18 @@ def perform_sobek_simulation(scenario_id,
         scenario.sobekmodel_inundation.sobekversion.fileloc_startfile)
     log.debug("copy from " + settings_ini_location + " to the CMTWORK dir")
     for name in ['simulate.ini', 'casedesc.cmt']:
-        temp = file(os.sep.join(cmtwork_dir + [name]), "w")
-        content = file(settings_ini_location + name, "r").read()
-        content = content.replace('lizardkb', project_name)
-        content = content.replace('LIZARDKB', project_name)
+        temp = file(os.path.join(cmtwork_dir, name), "w")
+        content = file(os.path.join(settings_ini_location, name), "r").read()
+        content = content.replace('lizardkb.lit', sobek_project_directory)
+        content = content.replace('LIZARDKB.LIT', sobek_project_directory)
         temp.write(content)
         temp.close()
 
-    program_name = os.sep.join(sobek_location + ["programs", "simulate.exe"])
-    configuration = os.sep.join(cmtwork_dir + ['simulate.ini'])
+    program_name = os.path.join(sobek_location, "programs", "simulate.exe")
+    configuration = os.path.join(cmtwork_dir, 'simulate.ini')
 
     log.debug('about to spawn the simulate subprocess')
-    cmd, cwd = [program_name, configuration], os.sep.join(cmtwork_dir)
+    cmd, cwd = [program_name, configuration], cmtwork_dir
     log.debug('command_list: %s, current_dir: %s' % (cmd, cwd))
 
     os.chdir(cwd)
@@ -284,12 +286,12 @@ def perform_sobek_simulation(scenario_id,
 
     # check the result of the execution
     saved = 0
-    for filename in os.listdir(os.sep.join(work_dir)):
+    for filename in os.listdir(work_dir):
         log.debug("checking what to do with output file '%s'" % filename)
         for type_id, matcher, dest, _ in matcher_destination:
             if matcher.match(filename):
                 log.debug("saving %s to %s" % (filename, dest.filename))
-                content = file(os.sep.join(work_dir + [filename]), 'rb').read()
+                content = file(os.path.join(work_dir, filename), 'rb').read()
                 dest.writestr(filename, content)
                 saved += 1
                 try:
