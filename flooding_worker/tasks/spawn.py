@@ -326,11 +326,11 @@ def perform_sobek_simulation(scenario_id,
         output = file(os.path.join(cmtwork_dir, 'PLUVIUS1.rtn'), "r")
         remarks = output.read()
     except:
-        remarks = ' 51\nerror reading output file'
+        remarks = '51\nerror reading output file'
 
     remarks = 'rev: ' + __revision__ + "\n" + remarks
 
     log.info(remarks)
 
-    result[0] = int(result[0])
-    return result
+    successful = int(remarks[0]) == 0
+    return successful
