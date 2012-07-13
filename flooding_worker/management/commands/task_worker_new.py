@@ -74,3 +74,4 @@ class Command(BaseCommand):
                              action,
                              options["worker_nr"])
         task_worker.run_worker()
+        removeFileHandlers()

@@ -42,7 +42,7 @@ import subprocess
 import threading
 import re
 logging.basicConfig(
-    level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',)
+    level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s',)
 log = logging.getLogger('nens')
 
 from flooding_lib.models import Scenario, ResultType
