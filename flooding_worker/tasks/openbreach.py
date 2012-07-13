@@ -55,6 +55,8 @@ from osgeo import osr, ogr, gdal
 sobek.log.setLevel(logging.INFO)
 asc.log.setLevel(logging.INFO)
 
+logging.basicConfig(
+    level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s',)
 log = logging.getLogger('nens')
 
 def set_broker_logging_handler(broker_handler=None):
