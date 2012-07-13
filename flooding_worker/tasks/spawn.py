@@ -42,7 +42,7 @@ import subprocess
 import threading
 import re
 logging.basicConfig(
-    level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s',)
+    format='%(asctime)s %(levelname)s %(message)s',)
 log = logging.getLogger('nens')
 
 from flooding_lib.models import Scenario, ResultType
@@ -332,7 +332,6 @@ def perform_sobek_simulation(scenario_id,
     remarks = 'rev: ' + __revision__ + "\n" + remarks
 
     log.info(remarks)
-
 
     successful = int(re.findall(r'\d+', remarks)[0]) == 0
     return successful

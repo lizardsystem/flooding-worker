@@ -20,3 +20,9 @@ def removeFileHandlers():
     for handler in logging.getLogger().handlers:
         if isinstance(handler, logging.FileHandler):
             logging.getLogger().removeHandler(handler)
+
+
+def setLevelToAllHandlers(level=0):
+    """ Set logging level to existing handlers."""
+    for handler in logging.getLogger().handlers:
+        handler.setLevel(level)
