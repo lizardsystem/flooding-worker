@@ -12,6 +12,8 @@ Changelog of flooding-worker
 
 - Deleted 'sequence' field.
 
+- Added heartbeat option to broker connection.
+
 0.6.2 (2012-06-28)
 ------------------
 

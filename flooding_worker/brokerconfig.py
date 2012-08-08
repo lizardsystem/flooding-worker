@@ -5,9 +5,10 @@ BROKER_SETTINGS = {
     #"BROKER_HOST": "10.100.155.150",
     "BROKER_HOST": "localhost",
     "BROKER_PORT": 5672,
-    "BROKER_USER": "admin",
-    "BROKER_PASSWORD": "kikker123",
-    "BROKER_VHOST": "/"
+    "BROKER_USER": "",
+    "BROKER_PASSWORD": "",
+    "BROKER_VHOST": "/",
+    "HEARTBEAT": True
 }
 
 QUEUES = {
