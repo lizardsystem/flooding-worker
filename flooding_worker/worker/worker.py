@@ -14,6 +14,18 @@ def start_action(action):
     action.callback
 
 
+def set_connection():
+    return BrokerConnection().connect_to_broker()
+
+
+def set_channel(connection):
+    try:
+        return connection.channel()
+    except AMQPChannelError as ex:
+        log.error("Worker_nr: {0} error: {1}".format(
+                self.worker_nr, ",".join(map(str, ex.args))))
+
+
 class Worker():
 
     def __init__(self, connection, task_code, action, worker_nr=1):
@@ -58,23 +70,23 @@ class WorkerProcess(Process):
         #self.set_channel()        
         Process.__init__(self, *args, **kwargs)
 
-    def set_connection(self):
-        self.connection = BrokerConnection().connect_to_broker()
+    # def set_connection(self):
+    #     self.connection = BrokerConnection().connect_to_broker()
 
-    def set_channel(self):
-        try:
-            self.channel = self.connection.channel()
-        except AMQPChannelError as ex:
-            log.error("Worker_nr: {0} error: {1}".format(
-                    self.worker_nr, ",".join(map(str, ex.args))))
+    # def set_channel(self):
+    #     try:
+    #         self.channel = self.connection.channel()
+    #     except AMQPChannelError as ex:
+    #         log.error("Worker_nr: {0} error: {1}".format(
+    #                 self.worker_nr, ",".join(map(str, ex.args))))
 
     def set_action(self, action):
         self.action = action
 
     def run(self):
         try:
-            self.set_connection()
-            self.set_channel() 
+            self.connection = set_connection()
+            self.channel = set_channel(self.connection) 
             self.channel.basic_qos(prefetch_count=1)
             self.channel.basic_consume(start_action(self.action),
                                   queue=self.task_code,
