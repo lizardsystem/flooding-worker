@@ -47,8 +47,8 @@ class ActionSupervisor(Action):
             self.set_logger(action)
             
             # create and start worker as subprocess
-            p = WorkerProcess(action, worker_nr, task_code)
-            p.start()
+            p = WorkerProcess(worker_nr, task_code)
+            p.start(action)
 
             self.processes.update({str(worker_nr): p})
         elif command == 'kill':
