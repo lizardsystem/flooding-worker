@@ -7,6 +7,7 @@ from flooding_worker.worker.action import Action
 from flooding_worker.worker.action_task import ActionTask
 from flooding_worker.worker.worker import WorkerProcess
 from flooding_worker.worker.message_logging_handler import AMQPMessageHandler
+from multiprocessing import Queue
 
 import logging
 
@@ -22,6 +23,7 @@ class ActionSupervisor(Action):
         self.numeric_loglevel = numeric_loglevel
         self.log = logging.getLogger('worker.action_supervisor')
         self.processes = {}
+        self.q = Queue()
 
     def callback(self, ch, method, properties, body):
         """
@@ -48,7 +50,7 @@ class ActionSupervisor(Action):
                 action, self.numeric_loglevel)
             action.set_broker_logging_handler(broker_logging_handler)
             # create and start worker as subprocess
-            p = WorkerProcess(action, worker_nr, task_code)
+            p = WorkerProcess(action, worker_nr, task_code, args=(self.q,))
             p.start()
 
             self.processes.update({str(worker_nr): p})
