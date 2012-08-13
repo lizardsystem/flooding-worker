@@ -10,8 +10,8 @@ from multiprocessing import Process
 from flooding_worker.worker.broker_connection import BrokerConnection
 
 
-def start_action(action):
-    action.callback()
+def start_actin(action):
+    action.callback
 
 
 class Worker():
