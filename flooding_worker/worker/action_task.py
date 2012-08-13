@@ -15,7 +15,6 @@ class ActionTask(Action):
     def __init__(self, task_code, worker_nr):
         self.task_code = task_code
         self.worker_nr = worker_nr
-        #self.body = None
         self.log = logging.getLogger('flooding.action.task')
         super(ActionTask, self).__init__()
 
@@ -28,6 +27,7 @@ class ActionTask(Action):
         """
         result_status = None
         self.channel = ch
+
         self.body = simplejson.loads(body)
         self.properties = properties
         self.log.info("Start task")

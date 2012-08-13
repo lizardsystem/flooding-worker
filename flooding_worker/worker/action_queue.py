@@ -5,8 +5,6 @@ import simplejson
 
 from flooding_worker.worker.action import Action
 
-import logging
-
 
 class ActionQueue(Action):
     """
@@ -24,7 +22,7 @@ class ActionQueue(Action):
         self.target_queue = None
         self.connection = connection
         self.body = None
-        self.log = logging.getLogger('flooding.action.priority')
+        self.log = None
         self.bulk_messages = {}
 
     def callback(self, ch, method, properties, body):

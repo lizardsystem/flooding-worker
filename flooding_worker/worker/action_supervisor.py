@@ -11,7 +11,7 @@ from multiprocessing import Queue
 
 import logging
 
-WORKER_COMMAND = ('start', 'stop')
+WORKER_COMMAND = ('start', 'kill')
 
 
 class ActionSupervisor(Action):
@@ -23,7 +23,6 @@ class ActionSupervisor(Action):
         self.numeric_loglevel = numeric_loglevel
         self.log = logging.getLogger('worker.action_supervisor')
         self.processes = {}
-        self.q = Queue()
 
     def callback(self, ch, method, properties, body):
         """
@@ -45,12 +44,10 @@ class ActionSupervisor(Action):
                     worker_nr, task_code))
             # set handler to forward logging to message broker
             action = ActionTask(task_code, worker_nr)
-            logging.handlers.AMQPMessageHandler = AMQPMessageHandler
-            broker_logging_handler = logging.handlers.AMQPMessageHandler(
-                action, self.numeric_loglevel)
-            action.set_broker_logging_handler(broker_logging_handler)
+            self.set_logger(action)
+            
             # create and start worker as subprocess
-            p = WorkerProcess(action, worker_nr, task_code, args=(self.q,))
+            p = WorkerProcess(action, worker_nr, task_code)
             p.start()
 
             self.processes.update({str(worker_nr): p})
@@ -72,7 +69,7 @@ class ActionSupervisor(Action):
         numbers = self.processes.keys()
         numbers.sort()
         if len(numbers) > 0:
-            number = int(numbers[len(numbers) - 1]) + 1
+            number = int(numbers[-1]) + 1
             return number
         return 1
 
@@ -81,3 +78,11 @@ class ActionSupervisor(Action):
         if p is None:
             self.log.error("Worker nr.{0} is not present".format(worker_nr))
         return p
+
+    def set_logger(self, action):
+        action.log = logging.getLogger(
+            'flooding.action.{0}'.format(action.worker_nr))
+        logging.handlers.AMQPMessageHandler = AMQPMessageHandler
+        broker_logging_handler = logging.handlers.AMQPMessageHandler(
+            action, self.numeric_loglevel)
+        action.set_broker_logging_handler(broker_logging_handler)

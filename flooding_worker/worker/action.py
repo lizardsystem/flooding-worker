@@ -11,7 +11,6 @@ from django.conf import settings
 class Action(object):
 
     def __init__(self):
-        self.log = logging.getLogger("flooding.action")
         self.body = None
         self.broker_logging_handler = None
         self.channel = None
