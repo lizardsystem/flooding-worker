@@ -31,7 +31,7 @@ class Worker():
         try:
             self.channel = self.connection.channel()
             self.channel.basic_qos(prefetch_count=1)
-            self.channel.basic_consume(start_action(self.action),
+            self.channel.basic_consume(self.action.callback,
                                   queue=self.task_code,
                                   no_ack=False)
             self.channel.start_consuming()
@@ -76,7 +76,7 @@ class WorkerProcess(Process):
             self.set_connection()
             self.set_channel() 
             self.channel.basic_qos(prefetch_count=1)
-            self.channel.basic_consume(self.action.callback,
+            self.channel.basic_consume(start_action(self.action),
                                   queue=self.task_code,
                                   no_ack=False)
             self.channel.start_consuming()
