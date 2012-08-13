@@ -60,12 +60,12 @@ class Worker():
 
 class WorkerProcess(Process):
 
-    def __init__(self, action, worker_nr, task_code, *args, **kwargs):
+    def __init__(self, worker_nr, task_code, *args, **kwargs):
         self.worker_nr = worker_nr
         self.task_code = task_code
         self.connection = None
         self.channel = None
-        self.action = action
+        #self.action = action
         #self.set_connection()
         #self.set_channel()        
         Process.__init__(self, *args, **kwargs)
@@ -80,11 +80,12 @@ class WorkerProcess(Process):
     #         log.error("Worker_nr: {0} error: {1}".format(
     #                 self.worker_nr, ",".join(map(str, ex.args))))
 
-    def set_action(self, action):
-        self.action = action
+    # def set_action(self, action):
+    #     self.action = action
 
-    def run(self):
+    def run(self, action):
         try:
+            self.action = action
             self.connection = set_connection()
             self.channel = set_channel(self.connection) 
             self.channel.basic_qos(prefetch_count=1)
