@@ -10,7 +10,7 @@ from multiprocessing import Process
 from flooding_worker.worker.broker_connection import BrokerConnection
 
 
-def start_actin(action):
+def start_action(action):
     action.callback()
 
 
@@ -31,7 +31,7 @@ class Worker():
         try:
             self.channel = self.connection.channel()
             self.channel.basic_qos(prefetch_count=1)
-            self.channel.basic_consume(action.start_action(self.action),
+            self.channel.basic_consume(start_action(self.action),
                                   queue=self.task_code,
                                   no_ack=False)
             self.channel.start_consuming()
