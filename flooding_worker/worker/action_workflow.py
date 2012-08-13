@@ -15,7 +15,7 @@ import logging
 
 class ActionWorkflow(Action):
 
-    def __init__(self, connection, scenario_id, workflowtemplate_id, workflowpriority=0):
+    def __init__(self, connection, scenario_id, workflowtemplate_id, workflowpriority=0, worker_nr="999"):
         self.connection = connection
         self.log = logging.getLogger('flooding.action.workflow')
         self.scenario_id = scenario_id
@@ -25,6 +25,7 @@ class ActionWorkflow(Action):
         self.workflow = None
         self.bulk_tasks = []
         self.channel = self.connection.channel()
+        self.worker_nr = worker_nr
 
     def callback(self, ch, method, properties, body):
         pass

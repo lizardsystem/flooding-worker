@@ -8,7 +8,7 @@ BROKER_SETTINGS = {
     "BROKER_USER": "",
     "BROKER_PASSWORD": "",
     "BROKER_VHOST": "/",
-    "HEARTBEAT": True
+    "HEARTBEAT": False
 }
 
 QUEUES = {

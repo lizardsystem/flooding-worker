@@ -43,7 +43,7 @@ class Action(object):
 
     def set_logging_to_body(self, message, log_level="0"):
         """Sets logging info into body."""
-        self.body["message"] = message
+        self.body["message"] = str(message)
         self.body["curr_log_level"] = log_level
         self.body["event_time"] = time.time()
 

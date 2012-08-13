@@ -24,7 +24,12 @@ class ActionLogging(Action):
         Cuts message to max. 200 chars.
         """
         body_dict = simplejson.loads(body)
-        task_code = body_dict["curr_task_code"]
+        task_code = body_dict.get("curr_task_code", None)
+        # TODO Implement logging of root/supervisor worker
+        if task_code is None:
+           ch.basic_ack(delivery_tag=method.delivery_tag)
+           return
+
         task_id = body_dict["workflow_tasks"][task_code]
         message = body_dict["message"][:200]
         try:
@@ -37,4 +42,4 @@ class ActionLogging(Action):
             new_logging.save()
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as ex:
-            log.error("{0}".format(ex))
+            log.error(",".join(map(str, ex.args)))

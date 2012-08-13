@@ -2,6 +2,7 @@
 # (c) Nelen & Schuurmans.  GPL licensed.
 
 import simplejson
+import time
 
 from flooding_worker.worker.action import Action
 from flooding_worker.perform_task import perform_task
@@ -11,12 +12,12 @@ import logging
 
 class ActionTask(Action):
 
-    def __init__(self, connection, task_code, worker_nr):
+    def __init__(self, task_code, worker_nr):
         self.task_code = task_code
         self.worker_nr = worker_nr
-        self.connection = connection
-        self.body = None
+        #self.body = None
         self.log = logging.getLogger('flooding.action.task')
+        super(ActionTask, self).__init__()
 
     def callback(self, ch, method, properties, body):
         """
@@ -45,9 +46,10 @@ class ActionTask(Action):
             self.proceed_next_trigger()
         else:
             self.requeue_failed_message(ch, method)
+        time.sleep(1)
         ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
 
-    def status_task(self, status = None):
+    def status_task(self, status=None):
         """
         Returns boolean.
         """
@@ -96,7 +98,3 @@ class ActionTask(Action):
                              body=simplejson.dumps(self.body),
                              properties=self.properties)
             self.log.info("Task moved to failed queue due failure.")
-
-
-
-

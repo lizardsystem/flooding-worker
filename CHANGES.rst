@@ -14,6 +14,8 @@ Changelog of flooding-worker
 
 - Added heartbeat option to broker connection.
 
+- Added functionality to start workers as subprocess.
+
 0.6.2 (2012-06-28)
 ------------------
 

@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from flooding_worker.file_logging import setFileHandler, removeFileHandlers
 from flooding_worker.file_logging import setLevelToAllHandlers
 from flooding_worker.worker.worker import Worker
-from flooding_worker.worker.action_task import ActionTask
+from flooding_worker.worker.action_supervisor import ActionSupervisor
 from flooding_worker.worker.broker_connection import BrokerConnection
 from flooding_worker.worker.message_logging_handler import AMQPMessageHandler
 
@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
         make_option('--task_code',
-                    help='tasks that worker must perform',
+                    help='task that worker must perform',
                     type='str'),
         make_option('--log_level',
                     help='logging level',
@@ -38,7 +38,7 @@ class Command(BaseCommand):
                     help='use this if you need more than one '\
                     'uitvoerder on this workstation',
                     type='int',
-                    default=1))
+                    default=1000))
 
     def handle(self, *args, **options):
 
@@ -62,7 +62,10 @@ class Command(BaseCommand):
             log.error("Could not connect to broker.")
             return
 
-        action = ActionTask(options["task_code"], options["worker_nr"])
+        action = ActionSupervisor(connection,
+                                  options["task_code"],
+                                  options["worker_nr"],
+                                  numeric_level)
 
         logging.handlers.AMQPMessageHandler = AMQPMessageHandler
         broker_logging_handler = logging.handlers.AMQPMessageHandler(
