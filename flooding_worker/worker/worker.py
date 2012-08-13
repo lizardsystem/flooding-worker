@@ -10,7 +10,7 @@ from multiprocessing import Process
 from flooding_worker.worker.broker_connection import BrokerConnection
 
 
-def start_actin(action):
+def start_action(action):
     action.callback
 
 
