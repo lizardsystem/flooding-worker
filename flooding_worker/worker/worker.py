@@ -50,8 +50,8 @@ class WorkerProcess(Process):
         self.connection = None
         self.channel = None
         self.action = action
-        self.set_connection()
-        self.set_channel()        
+        #self.set_connection()
+        #self.set_channel()        
         Process.__init__(self, *args, **kwargs)
 
     def set_connection(self):
@@ -69,6 +69,8 @@ class WorkerProcess(Process):
 
     def run(self):
         try:
+            self.set_connection()
+            self.set_channel() 
             self.channel.basic_qos(prefetch_count=1)
             self.channel.basic_consume(self.action.callback,
                                   queue=self.task_code,
