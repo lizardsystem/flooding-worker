@@ -15,6 +15,7 @@ class ActionTask(Action):
     def __init__(self, task_code, worker_nr):
         self.task_code = task_code
         self.worker_nr = worker_nr
+        # TODO set the logger properly on start worker
         self.log = logging.getLogger('flooding.action.task')
         super(ActionTask, self).__init__()
 
