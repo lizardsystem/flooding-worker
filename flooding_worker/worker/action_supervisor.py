@@ -34,7 +34,7 @@ class ActionSupervisor(Action):
 
         ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
 
-    def test_action(self, task_code, worker_nr):
+    def test_action(self, child, task_code, worker_nr):
         #action = ActionTask('120', '10')
         from flooding_worker.worker.worker import Worker
         from flooding_worker.worker.broker_connection import BrokerConnection
@@ -70,7 +70,7 @@ class ActionSupervisor(Action):
             child = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             print child.stderr
             print child.stdout
-            p = threading.Thread(target=self.test_action, args=(child,))
+            p = threading.Thread(target=self.test_action, args=(child, task_code, worker_nr))
             p.start()
             print p.ident
             self.processes.update({str(worker_nr): p})
