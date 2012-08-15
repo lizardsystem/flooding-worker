@@ -66,7 +66,7 @@ class ActionSupervisor(Action):
             #p = Process(target=self.test_action, args=(q,))
             #p.start()
             import subprocess, threading
-            cmd = ['bin/django', '--task_code', '120', '--worker_nr', str(worker_nr)]
+            cmd = ['c:/Flooding_worker_test/flooding/bin/django task_worker_new', '--task_code', '120', '--worker_nr', str(worker_nr)]
             p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             p.wait()
             for line in p.stdout:
