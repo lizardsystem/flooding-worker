@@ -67,12 +67,12 @@ class ActionSupervisor(Action):
             #p.start()
             import subprocess, threading, os
             from django.conf import settings
-            from flooding_worker.worker import WorkerTread
+            from flooding_worker.worker.worker import WorkerThread
             cmd = [os.path.join(settings.BUILDOUT_DIR, "bin", "django"),
                    "task_worker_new", "--task_code", str(task_code),
                    "--worker_nr", str(worker_nr), "--log_level", self.numeric_loglevel]
             self.log.info("COMMAND PATH {0}".format(cmd))
-            worker = WorkerTread(cmd)
+            worker = WorkerThread(cmd)
             p.start()
             self.processes.update({str(worker_nr): p})
         elif command == 'kill':

@@ -44,7 +44,7 @@ class Worker():
         self.channel.stop_consuming()
 
 
-class WorkerTread(threading.Thread):
+class WorkerThread(threading.Thread):
     def __init__(self, cmd):
         self.stdout = None
         self.stderr = None
