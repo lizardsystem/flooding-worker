@@ -74,7 +74,7 @@ class ActionSupervisor(Action):
             self.log.info("COMMAND PATH {0}".format(cmd))
             worker = WorkerThread(cmd)
             worker.start()
-            self.processes.update({str(worker_nr): wprker})
+            self.processes.update({str(worker_nr): worker})
         elif command == 'kill':
             worker_nr = str(self.body.get("worker_nr", None))
             print "====================================="
