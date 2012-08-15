@@ -80,7 +80,7 @@ class ActionSupervisor(Action):
             p = self.get_process(worker_nr)
             if p is not None and p.is_alive():
                 #p.connection.disconnect()
-                p.terminate()
+                p.kill()
                 #p.join()
                 self.processes.pop(worker_nr)
                 self.log.info("Worker nr.{0} is closed.".format(worker_nr))
