@@ -68,6 +68,8 @@ class ActionSupervisor(Action):
             import subprocess, threading
             cmd = ['bin/django', '--task_code', '120', '--worker_nr', str(worker_nr)]
             p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            print "STDOUT {0}".format(p.stdout)
+            print "STDOUT {0}".format(p.stderr)
             #p = threading.Thread(target=self.test_action, args=(child, task_code, worker_nr))
             #p.start()
             print p.pid
