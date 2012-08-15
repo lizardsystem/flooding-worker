@@ -7,9 +7,9 @@ from flooding_worker.worker.action import Action
 from flooding_worker.worker.action_task import ActionTask
 from flooding_worker.worker.worker import WorkerProcess
 from flooding_worker.worker.message_logging_handler import AMQPMessageHandler
-from multiprocessing import Queue
+from multiprocessing import Queue, Process
 
-import logging
+import logging, time
 
 WORKER_COMMAND = ('start', 'kill')
 
@@ -34,6 +34,12 @@ class ActionSupervisor(Action):
 
         ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
 
+    def test_action(self):
+        
+        for i in range(0, 10):
+            print i
+            time.sleep(1)
+
     def execute_command(self):
         command = self.body.get("command", None)
         success = True
@@ -47,7 +53,8 @@ class ActionSupervisor(Action):
             self.set_logger(action)
             
             # create and start worker as subprocess
-            p = WorkerProcess(action, worker_nr, task_code)
+            #p = WorkerProcess(action, worker_nr, task_code)
+            p = Process(target=self.test_action())
             p.start()
 
             self.processes.update({str(worker_nr): p})
