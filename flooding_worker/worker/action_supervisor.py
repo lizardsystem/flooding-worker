@@ -62,8 +62,13 @@ class ActionSupervisor(Action):
             
             # create and start worker as subprocess
             #p = WorkerProcess(action, worker_nr, task_code)
-            q = Queue()
-            p = Process(target=self.test_action, args=(task_code, worker_nr))
+            #q = Queue()
+            #p = Process(target=self.test_action, args=(q,))
+            #p.start()
+            import subprocess, threading
+            cmd = ['bin/django', '--task_code', '120', '--worker_nr', worker_nr]
+            child = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            p = threading.Thread(target=self.test_action, args=(child,))
             p.start()
             print p.ident
             self.processes.update({str(worker_nr): p})
