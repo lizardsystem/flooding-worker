@@ -67,12 +67,12 @@ class ActionSupervisor(Action):
             #p.start()
             import subprocess, threading
             cmd = ['bin/django', '--task_code', '120', '--worker_nr', str(worker_nr)]
-            child = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             print child.stderr
             print child.stdout
-            p = threading.Thread(target=self.test_action, args=(child, task_code, worker_nr))
-            p.start()
-            print p.ident
+            #p = threading.Thread(target=self.test_action, args=(child, task_code, worker_nr))
+            #p.start()
+            print p.pid
             self.processes.update({str(worker_nr): p})
         elif command == 'kill':
             worker_nr = str(self.body.get("worker_nr", None))
