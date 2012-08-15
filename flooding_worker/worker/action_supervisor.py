@@ -56,7 +56,7 @@ class ActionSupervisor(Action):
             # create and start worker as subprocess
             #p = WorkerProcess(action, worker_nr, task_code)
             q = Queue()
-            p = Process(target=self.test_action(), args=(q,))
+            p = Process(target=self.test_action, args=(q,))
             p.start()
 
             self.processes.update({str(worker_nr): p})
