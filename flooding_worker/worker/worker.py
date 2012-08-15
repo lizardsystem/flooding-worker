@@ -53,12 +53,12 @@ class WorkerThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        p = subprocess.Popen(self.cmd,
+        self.p = subprocess.Popen(self.cmd,
                              shell=False,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
 
-        self.stdout, self.stderr = p.communicate()
+        self.stdout, self.stderr = self.p.communicate()
 
     def kill_subprocess(self):
         self.p.kill()
