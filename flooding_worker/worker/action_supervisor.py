@@ -34,8 +34,9 @@ class ActionSupervisor(Action):
 
         ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
 
-    def test_action(self):
-        
+    def test_action(self, q):
+        action = ActionTask('120', '10')
+        q.put(action)
         for i in range(0, 10):
             print i
             time.sleep(1)
@@ -54,7 +55,8 @@ class ActionSupervisor(Action):
             
             # create and start worker as subprocess
             #p = WorkerProcess(action, worker_nr, task_code)
-            p = Process(target=self.test_action())
+            q = Queue()
+            p = Process(target=self.test_action(), args=(q,))
             p.start()
 
             self.processes.update({str(worker_nr): p})
