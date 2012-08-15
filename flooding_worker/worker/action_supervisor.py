@@ -73,15 +73,15 @@ class ActionSupervisor(Action):
                    "--worker_nr", str(worker_nr), "--log_level", self.numeric_loglevel]
             self.log.info("COMMAND PATH {0}".format(cmd))
             worker = WorkerThread(cmd)
-            p.start()
-            self.processes.update({str(worker_nr): p})
+            worker.start()
+            self.processes.update({str(worker_nr): wprker})
         elif command == 'kill':
             worker_nr = str(self.body.get("worker_nr", None))
             print "====================================="
-            p = self.get_process(worker_nr)
-            if p is not None and p.is_alive():
+            worker = self.get_process(worker_nr)
+            if worker is not None and worker.is_alive():
                 #p.connection.disconnect()
-                p.kill()
+                worker.kill_subprocess()
                 #p.join()
                 self.processes.pop(worker_nr)
                 self.log.info("Worker nr.{0} is closed.".format(worker_nr))
