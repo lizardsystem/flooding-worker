@@ -65,17 +65,15 @@ class ActionSupervisor(Action):
             #q = Queue()
             #p = Process(target=self.test_action, args=(q,))
             #p.start()
-            import subprocess, threading
-            cmd = ['c:/Flooding_worker_test/flooding/bin/django task_worker_new', '--task_code', '120', '--worker_nr', str(worker_nr)]
-            p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            p.wait()
-            for line in p.stdout:
-                self.log.info("STDOUT {0}".format(line))
-            self.log.info("STDERR {0}".format(p.stderr))
-            self.log.info("PID: {0}, RESULT: {1}".format(p.pid, p.returncode))
-            #p = threading.Thread(target=self.test_action, args=(child, task_code, worker_nr))
-            #p.start()
-            print p.pid
+            import subprocess, threading, os
+            from django.conf import settings
+            from flooding_worker.worker import WorkerTread
+            cmd = [os.path.join(settings.BUILDOUT_DIR, "bin", "django"),
+                   "task_worker_new", "--task_code", str(task_code),
+                   "--worker_nr", str(worker_nr), "--log_level", self.numeric_loglevel]
+            self.log.info("COMMAND PATH {0}".format(cmd))
+            worker = WorkerTread(cmd)
+            p.start()
             self.processes.update({str(worker_nr): p})
         elif command == 'kill':
             worker_nr = str(self.body.get("worker_nr", None))

@@ -6,6 +6,8 @@ from pika.exceptions import AMQPChannelError
 import logging
 log = logging.getLogger('flooding.worker')
 
+import threading
+import subprocess
 from multiprocessing import Process
 from flooding_worker.worker.broker_connection import BrokerConnection
 
@@ -42,6 +44,26 @@ class Worker():
         self.channel.stop_consuming()
 
 
+class WorkerTread(threading.Thread):
+    def __init__(self, cmd):
+        self.stdout = None
+        self.stderr = None
+        self.cmd = cmd
+        self.p = None
+        threading.Thread.__init__(self)
+
+    def run(self):
+        p = subprocess.Popen(self.cmd,
+                             shell=False,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+
+        self.stdout, self.stderr = p.communicate()
+
+    def kill_subprocess(self):
+        self.p.kill()
+
+
 class WorkerProcess(Process):
 
     def __init__(self, action, worker_nr, task_code, *args, **kwargs):
@@ -51,7 +73,7 @@ class WorkerProcess(Process):
         self.channel = None
         self.action = action
         self.set_connection()
-        self.set_channel()        
+        self.set_channel()
         Process.__init__(self, *args, **kwargs)
 
     def set_connection(self):
