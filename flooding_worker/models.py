@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowTemplate(models.Model):
+    DEFAULT_TEMPLATE_CODE = 1
+    IMPORTED_TEMPLATE_CODE = 2
+
     code = models.IntegerField(max_length=30)
 
     def __unicode__(self):
