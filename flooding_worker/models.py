@@ -7,7 +7,19 @@ LOGGING_LEVELS = (
     (1, u'INFO'),
     (2, u'WARNING'),
     (3, u'ERROR'),
-    (2, u'CRITICAL'),
+    (4, u'CRITICAL'),
+)
+
+QUEUED = u'QUEUED'
+STARTED = u'STARTED'
+SUCCESS = u'SUCCESS'
+FAILED = u'FAILED'
+
+STATUSES = (
+    (QUEUED, QUEUED),
+    (STARTED, STARTED),
+    (SUCCESS, SUCCESS),
+    (FAILED, FAILED),
 )
 
 
@@ -28,6 +40,7 @@ class WorkflowTemplate(models.Model):
 
 
 class Workflow(models.Model):
+
     code = models.CharField(max_length=100)
     template = models.ForeignKey(WorkflowTemplate, blank=True, null=True)
     scenario = models.IntegerField(blank=True, null=True)
@@ -44,6 +57,30 @@ class Workflow(models.Model):
     priority = models.IntegerField(
         blank=True,
         null=True)
+
+    def get_status(self):
+        tasks = self.w.workflowtask_set.all()
+        for task in tasks:
+            if task.status == 0:
+                return task.status
+
+    def is_success(self):
+        tasks = self.workflowtask_set.all()
+        success_tasks = self.workflowtask_set.filter(status=SUCCESS)
+        return (len(tasks) == len(success_tasks))
+
+    def is_queued(self):
+        tasks = self.workflowtask_set.all()
+        none_status_tasks = self.workflowtask_set.filter(status=None)
+        queued_status_tasks = self.workflowtask_set.filter(
+            status=QUEUED)
+        return (
+            len(none_status_tasks) + len(queued_status_tasks) == len(tasks))
+
+    def is_failed(self):
+        statuses = self.workflowtask_set.values_list(
+            'status', flat=True)
+        return (FAILED in statuses)
 
     def __unicode__(self):
         return self.code
@@ -90,6 +127,9 @@ class WorkflowTask(models.Model):
     tstart = models.DateTimeField(blank=True, null=True)
     tfinished = models.DateTimeField(blank=True, null=True)
     successful = models.NullBooleanField(blank=True, null=True)
+    status = models.CharField(choices=STATUSES,
+                              blank=True, null=True,
+                              max_length=25)
 
     def __unicode__(self):
         return self.code.name
