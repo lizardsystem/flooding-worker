@@ -10,6 +10,11 @@ from django.conf import settings
 
 class Action(object):
 
+    QUEUED = u'QUEUED'
+    STARTED = u'STARTED'
+    SUCCESS = u'SUCCESS'
+    FAILED = u'FAILED'
+
     def __init__(self):
         self.body = None
         self.broker_logging_handler = None
@@ -76,3 +81,6 @@ class Action(object):
 
     def set_current_task(self, queue):
         self.body["curr_task_code"] = queue
+
+    def set_status(self, status):
+        self.body["status"] = status

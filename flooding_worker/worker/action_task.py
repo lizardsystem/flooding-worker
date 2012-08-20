@@ -23,7 +23,7 @@ class ActionTask(Action):
         """
         Sets channel as class variable.
         Runs a task.
-        Sends message to next queue, back to the same queueu or
+        Sends message to next queue, back to the same queue or
         to queue with failed tasks depended on task result.
         """
         result_status = None
@@ -31,7 +31,9 @@ class ActionTask(Action):
 
         self.body = simplejson.loads(body)
         self.properties = properties
-        self.log.info("Start task")
+        self.set_status(self.STARTED)
+        self.log.info("Task is {}".format(self.STARTED))
+        self.set_status("")
         try:
             result_status = perform_task(self.body["scenario_id"],
                                       int(self.task_code),
@@ -41,13 +43,19 @@ class ActionTask(Action):
             self.log.error("{0}".format(ex))
             result_status = False
 
-        self.log.info("End task")
-
         if self.status_task(result_status):
+            self.set_status(self.SUCCESS)
+            self.log.info(
+                "Task is finished with {}.".format(self.SUCCESS))
+            self.set_status("")
             self.proceed_next_trigger()
+            self.log.info(
+                "Task is {}.".format(self.QUEUED))
         else:
+            self.set_status(self.FAILED)
+            self.log.info("Task is {}".format(self.FAILED))
+            self.set_status("")
             self.requeue_failed_message(ch, method)
-        time.sleep(1)
         ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
 
     def status_task(self, status=None):

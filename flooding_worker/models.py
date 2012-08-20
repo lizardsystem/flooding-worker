@@ -1,6 +1,7 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.txt.
 import logging
 from django.db import models
+from flooding_worker.worker.action import Action
 
 LOGGING_LEVELS = (
     (0, u'DEBUG'),
@@ -10,16 +11,12 @@ LOGGING_LEVELS = (
     (4, u'CRITICAL'),
 )
 
-QUEUED = u'QUEUED'
-STARTED = u'STARTED'
-SUCCESS = u'SUCCESS'
-FAILED = u'FAILED'
 
 STATUSES = (
-    (QUEUED, QUEUED),
-    (STARTED, STARTED),
-    (SUCCESS, SUCCESS),
-    (FAILED, FAILED),
+    (Action.QUEUED, Action.QUEUED),
+    (Action.STARTED, Action.STARTED),
+    (Action.SUCCESS, Action.SUCCESS),
+    (Action.FAILED, Action.FAILED),
 )
 
 
@@ -66,21 +63,21 @@ class Workflow(models.Model):
 
     def is_success(self):
         tasks = self.workflowtask_set.all()
-        success_tasks = self.workflowtask_set.filter(status=SUCCESS)
+        success_tasks = self.workflowtask_set.filter(status=Action.SUCCESS)
         return (len(tasks) == len(success_tasks))
 
     def is_queued(self):
         tasks = self.workflowtask_set.all()
         none_status_tasks = self.workflowtask_set.filter(status=None)
         queued_status_tasks = self.workflowtask_set.filter(
-            status=QUEUED)
+            status=Action.QUEUED)
         return (
             len(none_status_tasks) + len(queued_status_tasks) == len(tasks))
 
     def is_failed(self):
         statuses = self.workflowtask_set.values_list(
             'status', flat=True)
-        return (FAILED in statuses)
+        return (Action.FAILED in statuses)
 
     def __unicode__(self):
         return self.code

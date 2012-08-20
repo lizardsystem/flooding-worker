@@ -2,6 +2,7 @@
 
 from django.test import TestCase
 from flooding_worker import models as w_models
+from flooding_worker.worker.action import Action
 
 
 class ExampleTest(TestCase):
@@ -23,30 +24,30 @@ class WorkflowTest(TestCase):
         self.create_tasks()
 
     def test_is_status_failed(self):
-        """ 
+        """
         Test is successful if one or more tasks has/have
-        the status FAILED.    
+        the status FAILED.
         """
         self.update_tasks_status(
-            w_models.FAILED, self.tasks[0])
+            Action.FAILED, self.tasks[0])
         self.assertEquals(self.workflow.is_failed(), True)
 
     def test_is_status_success(self):
-        """ 
-        Test is successful if all tasks have
-        the status SUCCESS.    
         """
-        self.update_tasks_status(w_models.SUCCESS)
+        Test is successful if all tasks have
+        the status SUCCESS.
+        """
+        self.update_tasks_status(Action.SUCCESS)
         self.assertEquals(self.workflow.is_success(), True)
 
     def test_is_status_queued(self):
-        """ 
+        """
         Test is successful if one or more tasks has the status QUEUED
         and the rest doesn't have any status.
         """
         self.update_tasks_status(None)
         self.update_tasks_status(
-            w_models.QUEUED, self.tasks[0])
+            Action.QUEUED, self.tasks[0])
         self.assertEquals(self.workflow.is_queued(), True)
 
     def create_task_types(self):
