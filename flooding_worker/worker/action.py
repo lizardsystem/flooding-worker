@@ -10,6 +10,7 @@ from django.conf import settings
 
 class Action(object):
 
+    CREATED = u'CREATED'
     QUEUED = u'QUEUED'
     STARTED = u'STARTED'
     SUCCESS = u'SUCCESS'
@@ -82,5 +83,5 @@ class Action(object):
     def set_current_task(self, queue):
         self.body["curr_task_code"] = queue
 
-    def set_status(self, status):
+    def set_task_status(self, status):
         self.body["status"] = status

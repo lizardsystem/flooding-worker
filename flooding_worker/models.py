@@ -1,7 +1,10 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.txt.
 import logging
+import datetime
 from django.db import models
+from django.core.urlresolvers import reverse
 from flooding_worker.worker.action import Action
+
 
 LOGGING_LEVELS = (
     (0, u'DEBUG'),
@@ -41,6 +44,9 @@ class Workflow(models.Model):
     code = models.CharField(max_length=100)
     template = models.ForeignKey(WorkflowTemplate, blank=True, null=True)
     scenario = models.IntegerField(blank=True, null=True)
+    tcreated = models.DateTimeField(
+        blank=True,
+        null=True)
     tstart = models.DateTimeField(
         blank=True,
         null=True)
@@ -55,13 +61,32 @@ class Workflow(models.Model):
         blank=True,
         null=True)
 
-    def get_status(self):
-        tasks = self.w.workflowtask_set.all()
-        for task in tasks:
-            if task.status == 0:
-                return task.status
+    def get_tfinished(self):
+        tasks = self.workflowtask_set.all()
+        status = self.get_status()
+        if status in (Action.SUCCESS, Action.FAILED):
+            return tasks.latest('tfinished').tfinished
+        else:
+            return None
 
-    def is_success(self):
+    def get_status(self):
+        if not self.is_published():
+            return None
+        elif self.is_queued():
+            return Action.QUEUED
+        elif self.is_successful():
+            return Action.SUCCESS
+        elif self.is_failed():
+            return Action.FAILED
+        else:
+            return Action.STARTED
+
+    def is_published(self):
+        tasks = self.workflowtask_set.all()
+        none_status_tasks = tasks.filter(status__isnull=True)
+        return (len(tasks) > len(none_status_tasks))
+
+    def is_successful(self):
         tasks = self.workflowtask_set.all()
         success_tasks = self.workflowtask_set.filter(status=Action.SUCCESS)
         return (len(tasks) == len(success_tasks))
@@ -79,8 +104,27 @@ class Workflow(models.Model):
             'status', flat=True)
         return (Action.FAILED in statuses)
 
+    def latest_log(self):
+        return self.logging_set.all().latest('time').message
+
+    def tasks_count(self):
+        return self.workflowtask_set.all().count()
+
     def __unicode__(self):
         return self.code
+
+    def get_absolute_url_scenario(self):
+        return reverse('flooding_worker_scenario', kwargs={
+                'scenario_id': self.scenario})
+
+    def get_absolute_url_tasks(self):
+        return reverse('flooding_worker_workflow_task', kwargs={
+                'workflow_id': self.id})
+
+    def get_absolute_url_logging(self):
+        return reverse('flooding_worker_workflow_logging', kwargs={
+                'workflow_id': self.id,
+                'scenario_id': self.scenario})
 
     class Meta:
         db_table = 'flooding_worker_workflow'
@@ -121,12 +165,38 @@ class WorkflowTask(models.Model):
         help_text="Define a task's tree, None = end of the tree.")
     max_failures = models.IntegerField(default=0)
     max_duration_minutes = models.IntegerField(default=0)
+    tcreated = models.DateTimeField(blank=True, null=True)
+    tqueued = models.DateTimeField(blank=True, null=True)
     tstart = models.DateTimeField(blank=True, null=True)
     tfinished = models.DateTimeField(blank=True, null=True)
     successful = models.NullBooleanField(blank=True, null=True)
     status = models.CharField(choices=STATUSES,
                               blank=True, null=True,
                               max_length=25)
+
+    def set_action_time(self, t=None):
+        """
+        """
+        if t is None:
+            t = datetime.datetime.today()
+        if self.status == Action.QUEUED:
+            self.tqueued = t
+        elif self.status == Action.STARTED:
+            self.tstart = t
+        elif self.status in (Action.FAILED, Action.SUCCESS):
+            self.tfinished = t
+        else:
+            logger.warning("Unknown action status {0} at {1}.".format(
+                    self.status, t.isoformat()))
+
+    def latest_log(self):
+        return self.logging_set.all().latest('time').message
+
+    def get_absolute_url_logging(self):
+        return reverse('flooding_worker_workflow_task_logging', kwargs={
+                'task_id': self.id,
+                'workflow_id': self.workflow.id,
+                'scenario_id': self.workflow.scenario})
 
     def __unicode__(self):
         return self.code.name

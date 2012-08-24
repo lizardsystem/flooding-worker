@@ -31,9 +31,9 @@ class ActionTask(Action):
 
         self.body = simplejson.loads(body)
         self.properties = properties
-        self.set_status(self.STARTED)
+        self.set_task_status(self.STARTED)
         self.log.info("Task is {}".format(self.STARTED))
-        self.set_status("")
+        self.set_task_status("")
         try:
             result_status = perform_task(self.body["scenario_id"],
                                       int(self.task_code),
@@ -44,17 +44,17 @@ class ActionTask(Action):
             result_status = False
 
         if self.status_task(result_status):
-            self.set_status(self.SUCCESS)
+            self.set_task_status(self.SUCCESS)
             self.log.info(
                 "Task is finished with {}.".format(self.SUCCESS))
-            self.set_status("")
+            self.set_task_status("")
             self.proceed_next_trigger()
             self.log.info(
                 "Task is {}.".format(self.QUEUED))
         else:
-            self.set_status(self.FAILED)
+            self.set_task_status(self.FAILED)
             self.log.info("Task is {}".format(self.FAILED))
-            self.set_status("")
+            self.set_task_status("")
             self.requeue_failed_message(ch, method)
         ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
 
