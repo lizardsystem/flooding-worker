@@ -38,7 +38,7 @@ class WorkflowTest(TestCase):
         the status SUCCESS.
         """
         self.update_tasks_status(Action.SUCCESS)
-        self.assertEquals(self.workflow.is_success(), True)
+        self.assertEquals(self.workflow.is_successful(), True)
 
     def test_is_status_queued(self):
         """

@@ -62,7 +62,8 @@ class LoggingView(View):
 
     template = 'logging.html'
 
-    def get(self, request, workflow_id=None, task_id=None, scenario_id=None):
+    def get(self, request, workflow_id=None, task_id=None, scenario_id=None,
+            step=1, amount_per_step=1):
         context = {'scenario_id': scenario_id,
                    'workflow_id': workflow_id,
                    'task_id': task_id}
@@ -74,7 +75,16 @@ class LoggingView(View):
         else:
             options = {}
 
-        loggings = Logging.objects.filter(**options).order_by('-time')
+        all_loggings = Logging.objects.filter(**options).order_by('-time')
 
-        context.update({'loggings': loggings})
+        step = int(step)
+        from_range = ((step - 1) * amount_per_step)
+        to_range = (step * amount_per_step)
+        from_indexes = range(0, len(all_loggings), amount_per_step)
+
+        loggings = all_loggings[from_range: to_range]
+
+        context.update({'loggings': loggings,
+                        'step': step,
+                        'steps': range(1, len(from_indexes) + 1)})
         return render_to_response(self.template, context)

@@ -39,4 +39,15 @@ Flooding: {% trans 'Execute scenarios' %}
       {% endfor %}
     </tbody>
 </table>
+
+<p />
+<table><tr>
+{% for i in steps %}
+{% if i != step %}
+ <td><a href='{% url flooding_worker_workflow_logging scenario_id workflow_id i %}'>{{ i }}</a></td>
+{% else %}
+ <td>{{ i }}</td>
+{% endif %}
+{% endfor %}
+</tr></table>
 {% endblock %}

@@ -190,7 +190,9 @@ class WorkflowTask(models.Model):
                     self.status, t.isoformat()))
 
     def latest_log(self):
-        return self.logging_set.all().latest('time').message
+        loggings = self.logging_set.all()
+        if len(loggings) > 0:
+            return loggings.latest('time').message
 
     def get_absolute_url_logging(self):
         return reverse('flooding_worker_workflow_task_logging', kwargs={

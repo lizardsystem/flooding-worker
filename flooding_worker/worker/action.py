@@ -58,27 +58,19 @@ class Action(object):
 
     def root_queues(self):
         """Retrieve root queues from task's body."""
-        queues = []
         instruction = self.body["instruction"]
-        for (queue_code, parent_code) in instruction.iteritems():
-            if queue_code == parent_code:
-                queues.append(queue_code)
-        return queues
+        return [queue_code for queue_code, parent_code in instruction.iteritems() 
+                if queue_code == parent_code]
 
     def next_queues(self):
         """
-        Recovers queues(s) of next task(s)
+        Recovers queue(s) of next task(s)
         by increasing the sequence.
         """
         instruction = self.body["instruction"]
         current_queue = self.body["curr_task_code"]
-        queues = []
-        for (queue_code, parent_code) in instruction.iteritems():
-            if queue_code == parent_code:
-                continue
-            if current_queue == parent_code:
-                queues.append(queue_code)
-        return queues
+        return [queue_code for queue_code, parent_code in instruction.iteritems() 
+                if queue_code != parent_code and current_queue == parent_code]
 
     def set_current_task(self, queue):
         self.body["curr_task_code"] = queue
