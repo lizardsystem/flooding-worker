@@ -113,7 +113,7 @@ def add_prefix_to_objects(pool, prefix):
         if name.lower() == 'network.gr':
             log.debug("alter all GRID objects in 'network.gr': in the first TBLE, entries 3, 4 and 5 get the prefix unless entry is ''")
             for obj in item['GRID']:
-                table = obj['TBLE'][0]
+                table = obj['TBLE']
                 for row_no in range(table.rows()):
                     for col_no in [2, 3,4]:
                         if table[row_no, col_no] != '':
@@ -382,7 +382,7 @@ class Scenario:
             node_id = self.breachlinkproperty.breach.breachsobekmodel_set.get(sobekmodel__scenariobreach = self.breachlinkproperty).sobekid
             found = False
             for grid in pool2['network.gr']['GRID']:
-                table = grid['TBLE'][0]
+                table = grid['TBLE']
                 for row_no in range(table.rows()):
                     if table[row_no, 3] == node_id:
                         self.extern = table[row_no, 5], table[row_no, 6]
@@ -637,7 +637,7 @@ class Scenario:
 
             found = False
             for candidate_grid in pool_ref['network.gr']['GRID']:
-                table = candidate_grid['TBLE'][0]
+                table = candidate_grid['TBLE']
                 for row_no in range(table.rows()):
                     if (table[row_no, 2] == node_id or table[row_no, 4] == node_id):
                         log.debug("branch "+node_id + " gevonden")
@@ -656,7 +656,7 @@ class Scenario:
                     break
             if not found:
                 for candidate_grid in pool_ref['network.gr']['GRID']:
-                    table = candidate_grid['TBLE'][0]
+                    table = candidate_grid['TBLE']
                     for row_no in range(table.rows()):
                         if (table[row_no, 3] == node_id):
                             log.debug("node "+node_id + " gevonden")
@@ -1190,7 +1190,7 @@ class Scenario:
             objects = pool2['network.gr']['GRID']
             for obj in objects:
                 #log.info(obj)
-                table = obj['TBLE'][0]
+                table = obj['TBLE']
 
                 for row_no in range(table.rows()):
                     if elev_grid[[table[row_no,5],table[row_no,6]]] not in (False, None):

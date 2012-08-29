@@ -34,7 +34,7 @@ class WorkflowTasksView(View):
 
     def get_workflow(self, workflow_id):
         if workflow_id is not None:
-            return Workflow.objects.get(pk=workflow_id)
+            return Workflow.objects.get(pk=workflow_id).orger_by("-id")
 
     def tasks(self, workflow_id):
         if workflow_id is None:
