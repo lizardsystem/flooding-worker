@@ -22,6 +22,8 @@ Changelog of flooding-worker
 
 - Added unit tests.
 
+- Added heartbeat functionality.
+
 0.6.2 (2012-06-28)
 ------------------
 

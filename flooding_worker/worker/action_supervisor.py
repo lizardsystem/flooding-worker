@@ -77,7 +77,6 @@ class ActionSupervisor(Action):
             self.processes.update({str(worker_nr): worker})
         elif command == 'kill':
             worker_nr = str(self.body.get("worker_nr", None))
-            print "====================================="
             worker = self.get_process(worker_nr)
             if worker is not None and worker.is_alive():
                 #p.connection.disconnect()

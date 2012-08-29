@@ -2,10 +2,12 @@
 # (c) Nelen & Schuurmans.  GPL licensed.
 
 import simplejson
+import platform
 import time
 
 from flooding_worker.worker.action import Action
 from flooding_worker.perform_task import perform_task
+from flooding_worker.worker.messaging_body import Body
 
 import logging
 
@@ -15,6 +17,7 @@ class ActionTask(Action):
     def __init__(self, task_code, worker_nr):
         self.task_code = task_code
         self.worker_nr = worker_nr
+        self.node = platform.node()
         # TODO set the logger properly on start worker
         self.log = logging.getLogger('flooding.action.task')
         super(ActionTask, self).__init__()
@@ -28,12 +31,22 @@ class ActionTask(Action):
         """
         result_status = None
         self.channel = ch
-
         self.body = simplejson.loads(body)
+        self.body[Body.WORKER_NR] = self.worker_nr
+        self.body[Body.NODE] = self.node
         self.properties = properties
+
+        if self.body.get(Body.IS_HEARTBEAT):
+            self.body[Body.TIME] = time.time()
+            self.body[Body.WORKER_STATUS] = Action.ALIVE
+            self.log.info("HEARTBEAT")
+            ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
+            return
+
         self.set_task_status(self.STARTED)
         self.log.info("Task is {}".format(self.STARTED))
         self.set_task_status("")
+
         try:
             result_status = perform_task(self.body["scenario_id"],
                                       int(self.task_code),
@@ -101,7 +114,8 @@ class ActionTask(Action):
                              properties=self.properties)
             self.log.info("Task requeued due failure.")
         else:
-            self.body["max_failures_tmp"][self.task_code] = self.body["max_failures"][self.task_code]
+            self.body["max_failures_tmp"][self.task_code] = self.body[
+                "max_failures"][self.task_code]
             ch.basic_publish(exchange="router",
                              routing_key="failed",
                              body=simplejson.dumps(self.body),

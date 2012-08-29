@@ -3,7 +3,6 @@
 
 import time
 import simplejson
-import logging
 
 from django.conf import settings
 
@@ -15,6 +14,10 @@ class Action(object):
     STARTED = u'STARTED'
     SUCCESS = u'SUCCESS'
     FAILED = u'FAILED'
+
+    ALIVE = u'ALIVE'
+    DOWN = u'DOWN'
+    BUSY = u'BUSY'
 
     def __init__(self):
         self.body = None
@@ -50,7 +53,7 @@ class Action(object):
         """Sets logging info into body."""
         self.body["message"] = str(message)
         self.body["curr_log_level"] = log_level
-        self.body["event_time"] = time.time()
+        self.body["time"] = time.time()
 
     def retrieve_queue_options(self, task_code):
         """Retrieves queue info from brokerconfig file."""
@@ -59,7 +62,7 @@ class Action(object):
     def root_queues(self):
         """Retrieve root queues from task's body."""
         instruction = self.body["instruction"]
-        return [queue_code for queue_code, parent_code in instruction.iteritems() 
+        return [queue_code for queue_code, parent_code in instruction.iteritems()
                 if queue_code == parent_code]
 
     def next_queues(self):
@@ -69,7 +72,7 @@ class Action(object):
         """
         instruction = self.body["instruction"]
         current_queue = self.body["curr_task_code"]
-        return [queue_code for queue_code, parent_code in instruction.iteritems() 
+        return [queue_code for queue_code, parent_code in instruction.iteritems()
                 if queue_code != parent_code and current_queue == parent_code]
 
     def set_current_task(self, queue):

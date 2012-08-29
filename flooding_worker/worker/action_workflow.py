@@ -6,6 +6,7 @@ from flooding_worker.models import WorkflowTask
 from flooding_worker.models import WorkflowTemplate
 from flooding_worker.models import WorkflowTemplateTask
 from flooding_worker.worker.action import Action
+from flooding_worker.worker.messaging_body import Body
 
 from pika import BasicProperties
 
@@ -32,34 +33,27 @@ class ActionTaskPublisher(Action):
         Sends message the broker
         """
         self.set_message_properties()
-        self.body = self.create_message_body()
-
-        self.set_message_properties()
+        self.set_message_body()
         try:
             self.publish_task()
             return True
         except:
             return False
 
-    def create_message_body(self):
+    def set_message_body(self):
         """
         Creates a body of a message.
         """
-        option = {}
-
-        option["instruction"] = {self.task.code.name: self.task.code.name}
-        option["workflow_tasks"] = {self.task.code.name: self.task.id}
-        option["max_failures"] = {self.task.code.name: self.task.max_failures}
-        option["max_failures_tmp"] = {self.task.code.name: self.task.max_failures}
-        option["workflow_id"] = self.task.workflow.id
-        option["priority"] = self.task.workflow.priority
-        option["scenario_id"] = self.task.workflow.scenario
-        option["curr_log_level"] = ""
-        option["message"] = ""
-        option["event_time"] = time.time()
-        option["status"] = ""
-        option["curr_task_code"] = self.task.code.name
-        return option
+        self.body = Body().body
+        self.body[Body.INSTRUCTION] = {self.task.code.name: self.task.code.name}
+        self.body[Body.WORKFLOW_TASKS] = {self.task.code.name: self.task.id}
+        self.body[Body.MAX_FAILURES] = {self.task.code.name: self.task.max_failures}
+        self.body[Body.MAX_FAILURES_TMP] = {self.task.code.name: self.task.max_failures}
+        self.body[Body.WORKFLOW_ID] = self.task.workflow.id
+        self.body[Body.PRIORITY] = self.task.workflow.priority
+        self.body[Body.SCENARIO_ID] = self.task.workflow.scenario
+        self.body[Body.TIME] = time.time()
+        self.body[Body.CURR_TASK_CODE] = self.task.code.name
 
     def publish_task(self):
         """Sends message to the broker."""
@@ -83,6 +77,55 @@ class ActionTaskPublisher(Action):
         pass
 
 
+class ActionHeartbeat(Action):
+    """
+    Publish the HEARTBEAT message.
+    """
+    def __init__(self, connection, queue_codes):
+        self.connection = connection
+        self.log = logging.getLogger(__name__)
+        self.channel = self.connection.channel()
+        self.queue_codes = queue_codes
+
+    def perform(self):
+        """
+        Creates message body as instruction
+        Sends message the broker
+        """
+        self.set_message_properties()
+        self.set_message_body()
+        try:
+            self.publish_tasks()
+            return True
+        except:
+            return False
+
+    def set_message_body(self):
+        """
+        Creates a body of a message.
+        """
+        self.body = Body().body
+        self.body[Body.TIME] = time.time()
+        self.body[Body.IS_HEARTBEAT] = True
+
+    def publish_tasks(self):
+        """Sends message to the broker."""
+        for queue_code in self.queue_codes:
+            self.send_trigger_message(
+                self.body,
+                "HEARBEAT emitted to queue %s" % queue_code,
+                queue_code)
+
+    def set_message_properties(self, priority=0, message_id=0):
+        self.properties = BasicProperties(
+            content_type="application/json",
+            delivery_mode=2,
+            priority=priority)
+
+    def callback(self, ch, method, properties, body):
+        pass
+
+
 class ActionWorkflow(Action):
 
     def __init__(self, connection, scenario_id, workflowtemplate_id,
@@ -92,7 +135,6 @@ class ActionWorkflow(Action):
         self.scenario_id = scenario_id
         self.workflowtemplate_id = workflowtemplate_id
         self.workflowpriority = workflowpriority
-        self.body = {}
         self.workflow = None
         self.bulk_tasks = []
         self.channel = self.connection.channel()
@@ -112,8 +154,8 @@ class ActionWorkflow(Action):
             # self.log.error("Workflow is interrupted.")
             return
 
-        self.body = self.retrieve_workflow_options()
-
+        #self.body = self.retrieve_workflow_options()
+        self.set_message_body()
         self.set_message_properties()
         try:
             self.start_workflow()
@@ -158,19 +200,17 @@ class ActionWorkflow(Action):
                                     max_duration_minutes=template_task.max_duration_minutes)
                 task.save()
                 self.bulk_tasks.append(task)
-            # self.log.debug("Created '%s' tasks for workflow '%s', scenario '%s'." % (
-            #         len(self.bulk_tasks), template.code, self.scenario_id))
             return True
         except Exception as ex:
             self.log.error("{0}".format(ex))
             return False
 
-    def retrieve_workflow_options(self):
+    def set_message_body(self):
         """
         Creates a body as instruction mechanizm
         for messaging.
         """
-        option = {}
+        self.body = Body().body
         instruction = {}
         workflow_tasks = {}
         task_failures = {}
@@ -180,36 +220,28 @@ class ActionWorkflow(Action):
             workflow_tasks[task.code.name] = unicode(task.id)
             task_failures[task.code.name] = task.max_failures
 
-        option["instruction"] = instruction
-        option["workflow_tasks"] = workflow_tasks
-        option["max_failures"] = task_failures
-        option["max_failures_tmp"] = task_failures
-        if self.workflow:
-            option["workflow_id"] = self.workflow.id
-            option["priority"] = self.workflow.priority
-        option["scenario_id"] = self.scenario_id
-        option["curr_log_level"] = ""
-        option["message"] = ""
-        option["event_time"] = time.time()
-        option["status"] = ""
-        option["curr_task_code"] = ""
-        return option
+        self.body[Body.INSTRUCTION] = instruction
+        self.body[Body.WORKFLOW_TASKS] = workflow_tasks
+        self.body[Body.MAX_FAILURES] = task_failures
+        self.body[Body.MAX_FAILURES_TMP] = task_failures
+        self.body[Body.WORKFLOW_ID] = self.workflow.id
+        self.body[Body.PRIORITY] = self.workflow.priority
+        self.body[Body.SCENARIO_ID] = self.scenario_id
+        self.body[Body.TIME] = time.time()
 
     def start_workflow(self):
-        """Sends trigger and logging messages to broker."""
-        # TODO define default body
-        # self.log.info("Start workflow")
+        """
+        Send trigger and logging messages to broker.
+        """
 
         queues = self.root_queues()
         for queue in queues:
             self.set_task_status(self.QUEUED)
             self.set_current_task(queue)
-            print self.body
             self.log.info("Task is {}.".format(self.QUEUED))
-            print queue
             self.send_trigger_message(self.body,
-                                 "Message emitted to queue %s" % queue,
-                                 queue)
+                                      "Message emitted to queue %s" % queue,
+                                      queue)
 
     def set_message_properties(self, priority=0, message_id=0):
         if self.workflow is not None:

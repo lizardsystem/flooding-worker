@@ -63,7 +63,7 @@ class LoggingView(View):
     template = 'logging.html'
 
     def get(self, request, workflow_id=None, task_id=None, scenario_id=None,
-            step=1, amount_per_step=1):
+            step=1, amount_per_step=20):
         context = {'scenario_id': scenario_id,
                    'workflow_id': workflow_id,
                    'task_id': task_id}

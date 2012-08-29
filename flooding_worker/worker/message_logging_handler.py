@@ -13,6 +13,5 @@ class AMQPMessageHandler(logging.Handler):
         logging.Handler.__init__(self, level=numeric_level)
         self.action = action
 
-
     def emit(self, record):
         self.action.send_logging_message(record.msg)

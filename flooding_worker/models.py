@@ -105,7 +105,8 @@ class Workflow(models.Model):
         return (Action.FAILED in statuses)
 
     def latest_log(self):
-        return self.logging_set.all().latest('time').message
+        return self.logging_set.filter(
+            is_heartbeat=False).latest('time').message
 
     def tasks_count(self):
         return self.workflowtask_set.all().count()
@@ -190,7 +191,7 @@ class WorkflowTask(models.Model):
                     self.status, t.isoformat()))
 
     def latest_log(self):
-        loggings = self.logging_set.all()
+        loggings = self.logging_set.filter(is_heartbeat=False)
         if len(loggings) > 0:
             return loggings.latest('time').message
 
@@ -207,9 +208,27 @@ class WorkflowTask(models.Model):
         db_table = 'flooding_worker_workflowtask'
 
 
+class Worker(models.Model):
+
+    W_STATUSES = (
+        (Action.ALIVE, Action.ALIVE),
+        (Action.DOWN, Action.DOWN),
+        (Action.BUSY, Action.BUSY),)
+
+    worker_nr = models.IntegerField(blank=True, null=True)
+    status = models.CharField(choices=W_STATUSES,
+                              blank=True, null=True,
+                              max_length=25)
+    time = models.DateTimeField(blank=True, null=True)
+    node = models.CharField(blank=True, null=True,
+                            max_length=255)
+    queue_code = models.CharField(blank=True, null=True,
+                            max_length=25)
+
+
 class Logging(models.Model):
-    workflow = models.ForeignKey(Workflow)
-    task = models.ForeignKey(WorkflowTask)
+    workflow = models.ForeignKey(Workflow, blank=True, null=True)
+    task = models.ForeignKey(WorkflowTask, blank=True, null=True)
     time = models.DateTimeField(
         blank=True,
         null=True)
@@ -217,7 +236,10 @@ class Logging(models.Model):
         choices=LOGGING_LEVELS,
         blank=True,
         null=True)
-    message = models.CharField(max_length=200)
+    message = models.TextField(blank=True, null=True)
+    worker = models.ForeignKey(Worker, blank=True,
+                               null=True)
+    is_heartbeat = models.BooleanField()
 
     class Meta:
         get_latest_by = "time"

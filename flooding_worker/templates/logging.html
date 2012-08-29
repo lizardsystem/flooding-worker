@@ -21,7 +21,9 @@ Flooding: {% trans 'Execute scenarios' %}
       <th>Taak</th>
       <th>Taak ID</th>
       <th>Datum Tijd</th>
-      <th>Level</th>  
+      <th>Level</th>
+      <th>Worker_nr</th>
+      <th>Host</th>
       <th>Bericht</th>
     </thead>
     <tbody>
@@ -34,6 +36,8 @@ Flooding: {% trans 'Execute scenarios' %}
 	<td>{{ message.task.id }}</td>
 	<td>{{ message.time }}</td>
 	<td>{{ message.level }}</td>
+	<td>{{ message.worker.worker_nr }}</td>
+	<td>{{ message.worker.node }}</td>
 	<td>{{ message.message }}</td>
       </tr>
       {% endfor %}
@@ -41,6 +45,7 @@ Flooding: {% trans 'Execute scenarios' %}
 </table>
 
 <p />
+<dev class="pagination">
 <table><tr>
 {% for i in steps %}
 {% if i != step %}
@@ -50,4 +55,5 @@ Flooding: {% trans 'Execute scenarios' %}
 {% endif %}
 {% endfor %}
 </tr></table>
+</dev>
 {% endblock %}

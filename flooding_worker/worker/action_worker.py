@@ -42,7 +42,7 @@ class ActionWorker(Action):
         option["worker_nr"] = self.worker_nr
         option["command"] = self.command
         option["task_code"] = self.task_code
-        option["event_time"] = datetime.today().isoformat()
+        option["time"] = datetime.today().isoformat()
         return option
 
     def set_message_properties(self, priority=0, message_id=0):
