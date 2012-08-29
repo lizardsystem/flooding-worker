@@ -816,6 +816,9 @@ class Scenario:
         self.pool['network.ntw'].replace(elev_grid_name, new_elev_name)
 
         log.debug("now we have the grid")
+        
+        log.info("value internalnode: %s"%elev_grid[self.breach.internalnode.coords])
+        log.info("value externalnode: %s"%elev_grid[self.breach.externalnode.coords])
 
         if elev_grid[self.breach.internalnode.coords] is False:
             raise ValueError("the 'intern' point is really outside of the grid")
