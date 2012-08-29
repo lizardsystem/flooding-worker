@@ -154,10 +154,14 @@ class Scenario:
         else:
            srs = self.scenario.sobekmodel_inundation.model_srid
 
-        self.breach_length = self.breach.internalnode.distance(self.breach.externalnode)
         self.breach.internalnode.transform(srs)
         self.breach.externalnode.transform(srs)
 
+        dx = self.breach.externalnode.x - self.breach.internalnode.x
+        dy = self.breach.externalnode.y - self.breach.internalnode.y
+
+        self.breach_length = math.sqrt((dx * dx) + (dy * dy)
+)
         self.extern = self.breach.externalnode.x, self.breach.externalnode.y
 
         self.tmp_dir = tmp_dir
