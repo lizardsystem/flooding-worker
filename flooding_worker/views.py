@@ -1,23 +1,90 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.txt.
 
 from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.views.generic import View
 
-#from flooding_worker.models import Workflow
-#from flooding_lib.models import Task
+from django.contrib.sites.models import get_current_site
+from flooding_worker.models import Workflow, WorkflowTask
 from flooding_worker.models import Logging
+from flooding_worker import executor
 
 
-def homepage(request,
-             customer_id=None,
-             workflow_id=None,
-             template="home.html"):
+class WorkflowTasksView(View):
 
-    loggings = Logging.objects.all().order_by('-time')
-    return render_to_response(
-        template,
-        {
-#           "customers": customers,
-#            "workflows": workflow,
-            "loggings": loggings},
-        context_instance=RequestContext(request))
+    template = 'workflow_tasks.html'
+
+    def get(self, request, workflow_id=None):
+        context = {'tasks': self.tasks(workflow_id),
+                   'workflow': self.get_workflow(workflow_id)}
+        return render_to_response(self.template, context)
+
+    def post(self, request, workflow_id=None):
+        task_id = request.POST.get('task_id')
+        task_code = request.POST.get('task_code')
+        success = executor.start_task(task_id)
+        msg = "Taak code {0} is {1} geplaatst in de wachtrij."
+        if success:
+            msg = msg.format(task_code, '')
+        else:
+            msg = msg.format(task_code, 'NIET')
+        context = {'tasks': self.tasks(workflow_id),
+                   'msg': msg,
+                   'workflow': self.get_workflow(workflow_id)}
+        return render_to_response(self.template, context)
+
+    def get_workflow(self, workflow_id):
+        if workflow_id is not None:
+            return Workflow.objects.get(pk=workflow_id)
+
+    def tasks(self, workflow_id):
+        if workflow_id is None:
+            return {}
+        else:
+            tasks = WorkflowTask.objects.filter(workflow__id=workflow_id)
+            return tasks
+
+
+class WorkflowsView(View):
+
+    template = 'workflows.html'
+
+    def get(self, request, scenario_id=None):
+        workflows = Workflow.objects.filter(
+            scenario=scenario_id).order_by('-tcreated')
+
+        context = {'workflows': workflows,
+                   'scenario_id': scenario_id,
+                   'current_site': get_current_site(request)}
+        return render_to_response(self.template, context)
+
+
+class LoggingView(View):
+
+    template = 'logging.html'
+
+    def get(self, request, workflow_id=None, task_id=None, scenario_id=None,
+            step=1, amount_per_step=20):
+        context = {'scenario_id': scenario_id,
+                   'workflow_id': workflow_id,
+                   'task_id': task_id}
+
+        if task_id is not None:
+            options = {'task__id': task_id}
+        elif workflow_id is not None:
+            options = {'workflow__id': workflow_id}
+        else:
+            options = {}
+
+        all_loggings = Logging.objects.filter(**options).order_by('-time')
+
+        step = int(step)
+        from_range = ((step - 1) * amount_per_step)
+        to_range = (step * amount_per_step)
+        from_indexes = range(0, len(all_loggings), amount_per_step)
+
+        loggings = all_loggings[from_range: to_range]
+
+        context.update({'loggings': loggings,
+                        'step': step,
+                        'steps': range(1, len(from_indexes) + 1)})
+        return render_to_response(self.template, context)

@@ -16,6 +16,14 @@ Changelog of flooding-worker
 
 - Added functionality to start workers as subprocess.
 
+- Added success field to WorkflowTask model.
+
+- Added function to define status of workflow.
+
+- Added unit tests.
+
+- Added heartbeat functionality.
+
 0.6.2 (2012-06-28)
 ------------------
 

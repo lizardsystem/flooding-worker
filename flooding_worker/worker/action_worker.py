@@ -5,7 +5,7 @@ from flooding_worker.worker.action import Action
 
 from pika import BasicProperties
 
-import time
+from datetime import datetime
 import logging
 
 
@@ -42,7 +42,7 @@ class ActionWorker(Action):
         option["worker_nr"] = self.worker_nr
         option["command"] = self.command
         option["task_code"] = self.task_code
-        option["event_time"] = time.time()
+        option["time"] = datetime.today().isoformat()
         return option
 
     def set_message_properties(self, priority=0, message_id=0):
@@ -51,4 +51,4 @@ class ActionWorker(Action):
                                           delivery_mode=2,
                                           priority=priority,
                                           message_id=str(message_id),
-                                          timestamp=time.time())
+                                          timestamp=datetime.today().isoformat())

@@ -34,11 +34,19 @@ class ActionSupervisor(Action):
 
         ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
 
-    def test_action(self):
-        
-        for i in range(0, 10):
-            print i
-            time.sleep(1)
+    def test_action(self, child, task_code, worker_nr):
+        #action = ActionTask('120', '10')
+        from flooding_worker.worker.worker import Worker
+        from flooding_worker.worker.broker_connection import BrokerConnection
+        connection = BrokerConnection().connect_to_broker()
+        action = ActionTask(task_code, worker_nr)
+        worker = Worker(connection, task_code, action, worker_nr)
+        worker.run_worker()
+        # for i in range(0, 10):
+        #     print i
+        #     time.sleep(1)
+        # for line in p.stdout.readlines():
+        #         print line,
 
     def execute_command(self):
         command = self.body.get("command", None)
@@ -49,22 +57,31 @@ class ActionSupervisor(Action):
             self.log.info("Start worker nr. {0} to performe task {1}".format(
                     worker_nr, task_code))
             # set handler to forward logging to message broker
-            action = ActionTask(task_code, worker_nr)
-            self.set_logger(action)
+            #action = ActionTask(task_code, worker_nr)
+            #self.set_logger(action)
             
             # create and start worker as subprocess
             #p = WorkerProcess(action, worker_nr, task_code)
-            p = Process(target=self.test_action())
-            p.start()
-
-            self.processes.update({str(worker_nr): p})
+            #q = Queue()
+            #p = Process(target=self.test_action, args=(q,))
+            #p.start()
+            import subprocess, threading, os
+            from django.conf import settings
+            from flooding_worker.worker.worker import WorkerThread
+            cmd = [os.path.join(settings.BUILDOUT_DIR, "bin", "django"),
+                   "task_worker_new", "--task_code", str(task_code),
+                   "--worker_nr", str(worker_nr), "--log_level", str(self.numeric_loglevel)]
+            self.log.info("COMMAND PATH {0}".format(cmd))
+            worker = WorkerThread(cmd)
+            worker.start()
+            self.processes.update({str(worker_nr): worker})
         elif command == 'kill':
             worker_nr = str(self.body.get("worker_nr", None))
-            p = self.get_process(worker_nr)
-            if p is not None and p.is_alive():
-                p.connection.disconnect()
-                p.terminate()
-                p.join()
+            worker = self.get_process(worker_nr)
+            if worker is not None and worker.is_alive():
+                #p.connection.disconnect()
+                worker.kill_subprocess()
+                #p.join()
                 self.processes.pop(worker_nr)
                 self.log.info("Worker nr.{0} is closed.".format(worker_nr))
         else:
