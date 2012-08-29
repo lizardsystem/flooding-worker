@@ -2,8 +2,8 @@ Changelog of flooding-worker
 ===================================================
 
 
-0.6.3 (unreleased)
-------------------
+1.0 (2012-08-29)
+----------------
 
 - Added functionality to replace FileHandler of the root logger with a
   specific FileHandler per worker.
