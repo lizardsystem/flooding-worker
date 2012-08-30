@@ -122,4 +122,4 @@ class ActionTask(Action):
                              routing_key="failed",
                              body=simplejson.dumps(self.body),
                              properties=self.properties)
-            self.log.debug("Task moved to failed queue due failure.")
+            self.log.debug("Task moved to failed queue.")
