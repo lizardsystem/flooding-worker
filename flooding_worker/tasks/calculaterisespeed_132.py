@@ -63,7 +63,7 @@ def set_broker_logging_handler(broker_handler=None):
 
 def perform_calculation(scenario_id, tmp_location, timeout=0):
 
-    log.debug("step 0b: get the settings for scenario '%d'." % scenario_id)
+    log.debug("step 0b: get the settings for scenario '%s'." % scenario_id)
     log.debug("0b1: scenario_id, region_id, breach_id")
     scenario = Scenario.objects.get(pk=scenario_id)
 
@@ -96,7 +96,7 @@ def perform_calculation(scenario_id, tmp_location, timeout=0):
                 except KeyError:
                     log.debug('file %s not found in archive' % name)
         except Result.DoesNotExist as e:
-            log.info('inputfile of resulttype %i not found' % resulttype)
+            log.info('inputfile of resulttype %s not found' % resulttype)
             log.debug(','.join(map(str, e.args)))
 
     log.debug(

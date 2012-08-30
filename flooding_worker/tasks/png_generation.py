@@ -73,7 +73,7 @@ def common_generation(scenario_id, tmp_dir, source_programs):
     destination_dir = Setting.objects.get(key='DESTINATION_DIR').value
     source_dir = Setting.objects.get(key='SOURCE_DIR').value
 
-    log.debug("select results relative to scenario %i" % scenario_id)
+    log.debug("select results relative to scenario %s" % scenario_id)
     results = scenario.result_set.filter(resulttype__program__in=source_programs, resulttype__color_mapping_name__isnull=False)
 
     log.debug("selected results for scenario: %s" % str(results))
