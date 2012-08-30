@@ -5,7 +5,7 @@ import time
 import simplejson
 
 from django.conf import settings
-from flooding_worker.messaging_body import Body
+from flooding_worker.worker.messaging_body import Body
 
 
 class Action(object):
