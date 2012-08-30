@@ -92,9 +92,9 @@ class ActionTask(Action):
             self.set_current_task(queue)
             self.send_trigger_message(
                 self.body,
-                "Message emitted to queue %s" % queue,
+                "Message emitted to queue {}".format(queue),
                 queue)
-            self.log.info("Task is {}.".format(self.QUEUED))
+            self.log.info("Task {0} is {1}.".format(queue, self.QUEUED))
 
     def decrease_failures(self):
         try:
