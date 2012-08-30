@@ -54,7 +54,7 @@ class ActionLogging(Action):
             new_logging = Logging(
                 workflow=workflow,
                 task=task,
-                time=datetime.today(),
+                time=datetime.fromtimestamp(event_time),
                 level=body_dict.get(Body.CURR_LOG_LEVEL, None),
                 message=message,
                 is_heartbeat=is_heartbeat,

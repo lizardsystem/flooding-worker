@@ -50,7 +50,7 @@ class ActionTask(Action):
         self.set_task_status("")
 
         try:
-            result_status = perform_task(self.body["scenario_id"],
+            result_status = perform_task(self.body[Body.SCENARIO_ID],
                                       int(self.task_code),
                                       self.worker_nr,
                                       self.broker_logging_handler)
@@ -93,13 +93,13 @@ class ActionTask(Action):
             self.send_trigger_message(
                 self.body,
                 "Message emitted to queue %s" % queue,
-                queue)        
+                queue)
             self.log.info("Task is {}.".format(self.QUEUED))
 
     def decrease_failures(self):
         try:
-            failures = int(self.body["max_failures_tmp"][self.task_code])
-            self.body["max_failures_tmp"][self.task_code] = failures - 1
+            failures = int(self.body[Body.MAX_FAILURES_TMP][self.task_code])
+            self.body[Body.MAX_FAILURES_TMP][self.task_code] = failures - 1
         except Exception as ex:
             self.log.error("{0}".format(ex))
 
@@ -109,17 +109,17 @@ class ActionTask(Action):
         to the failed queue.
         """
         self.decrease_failures()
-        if int(self.body["max_failures_tmp"][self.task_code]) >= 0:
+        if int(self.body[Body.MAX_FAILURES_TMP][self.task_code]) >= 0:
             ch.basic_publish(exchange=method.exchange,
                              routing_key=method.routing_key,
                              body=simplejson.dumps(self.body),
                              properties=self.properties)
             self.log.info("Task requeued due failure.")
         else:
-            self.body["max_failures_tmp"][self.task_code] = self.body[
-                "max_failures"][self.task_code]
+            self.body[Body.MAX_FAILURES_TMP][self.task_code] = self.body[
+                Body.MAX_FAILURES][self.task_code]
             ch.basic_publish(exchange="router",
                              routing_key="failed",
                              body=simplejson.dumps(self.body),
                              properties=self.properties)
-            self.log.info("Task moved to failed queue due failure.")
+            self.log.debug("Task moved to failed queue due failure.")

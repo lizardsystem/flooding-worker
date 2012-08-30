@@ -5,7 +5,7 @@ Changelog of flooding-worker
 1.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Changed ordering of views.
 
 
 1.0 (2012-08-29)
