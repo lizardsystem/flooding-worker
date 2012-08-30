@@ -173,7 +173,7 @@ def get_or_create_model_shapefile_def(model_loc, output_dir, generate, srid,
 
         for candidate_grid in pool['GRID']:
             branch_id = candidate_grid['id'][0]
-            table = candidate_grid['TBLE'][0]
+            table = candidate_grid['gr gr'][-1:][0]
             for row_no in range(table.rows()):
                 node_id = table[row_no, 3]
                 #check if node is not already in dict

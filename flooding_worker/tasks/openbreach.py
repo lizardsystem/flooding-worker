@@ -640,7 +640,7 @@ class Scenario:
                 table = candidate_grid['gr gr'][-1:][0]
                 for row_no in range(table.rows()):
                     if (table[row_no, 2] == node_id or table[row_no, 4] == node_id):
-                        log.debug("branch "+node_id + " gevonden")
+                        log.debug("branch "+ node_id + " gevonden")
                         branch_id = candidate_grid['ci'][0]
                         if table[row_no, 2] == node_id:
                             prev_c = table[row_no-1, 0]

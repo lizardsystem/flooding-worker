@@ -4,6 +4,7 @@
 import simplejson
 import platform
 import time
+import datetime
 
 from flooding_worker.worker.action import Action
 from flooding_worker.perform_task import perform_task
@@ -27,7 +28,7 @@ class ActionTask(Action):
         Sets channel as class variable.
         Runs a task.
         Sends message to next queue, back to the same queue or
-        to queue with failed tasks depended on task result.
+        to queue with the failed tasks depended on task result.
         """
         result_status = None
         self.channel = ch
@@ -39,7 +40,8 @@ class ActionTask(Action):
         if self.body.get(Body.IS_HEARTBEAT):
             self.body[Body.TIME] = time.time()
             self.body[Body.WORKER_STATUS] = Action.ALIVE
-            self.log.info("HEARTBEAT")
+            self.log.info("HEARTBEAT AT {}".format(
+                    datetime.datetime.today().isoformat()))
             ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
             return
 
