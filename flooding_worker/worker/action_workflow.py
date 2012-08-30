@@ -18,7 +18,7 @@ import logging
 class ActionTaskPublisher(Action):
     """
     ActionStartTask publishes a singel task to
-    the queue with the same name.
+    the queue.
     """
 
     def __init__(self, connection, task):

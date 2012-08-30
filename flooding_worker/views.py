@@ -34,13 +34,12 @@ class WorkflowTasksView(View):
 
     def get_workflow(self, workflow_id):
         if workflow_id is not None:
-            return Workflow.objects.get(pk=workflow_id).orger_by("-id")
+            return Workflow.objects.get(pk=workflow_id)
 
     def tasks(self, workflow_id):
-        if workflow_id is None:
-            return {}
-        else:
-            tasks = WorkflowTask.objects.filter(workflow__id=workflow_id)
+        if workflow_id is not None:
+            tasks = WorkflowTask.objects.filter(
+                workflow__id=workflow_id).order_by("-code")
             return tasks
 
 

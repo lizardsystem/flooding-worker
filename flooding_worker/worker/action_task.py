@@ -64,8 +64,6 @@ class ActionTask(Action):
                 "Task is finished with {}.".format(self.SUCCESS))
             self.set_task_status("")
             self.proceed_next_trigger()
-            self.log.info(
-                "Task is {}.".format(self.QUEUED))
         else:
             self.set_task_status(self.FAILED)
             self.log.info("Task is {}".format(self.FAILED))
@@ -92,9 +90,11 @@ class ActionTask(Action):
         queues = self.next_queues()
         for queue in queues:
             self.set_current_task(queue)
-            self.send_trigger_message(self.body,
-                                 "Message emitted to queue %s" % queue,
-                                 queue)
+            self.send_trigger_message(
+                self.body,
+                "Message emitted to queue %s" % queue,
+                queue)        
+            self.log.info("Task is {}.".format(self.QUEUED))
 
     def decrease_failures(self):
         try:

@@ -5,6 +5,7 @@ import time
 import simplejson
 
 from django.conf import settings
+from flooding_worker.messaging_body import Body
 
 
 class Action(object):
@@ -51,9 +52,9 @@ class Action(object):
 
     def set_logging_to_body(self, message, log_level="0"):
         """Sets logging info into body."""
-        self.body["message"] = str(message)
-        self.body["curr_log_level"] = log_level
-        self.body["time"] = time.time()
+        self.body[Body.MESSAGE] = str(message)
+        self.body[Body.CURR_LOG_LEVEL] = log_level
+        self.body[Body.TIME] = time.time()
 
     def retrieve_queue_options(self, task_code):
         """Retrieves queue info from brokerconfig file."""
@@ -61,7 +62,7 @@ class Action(object):
 
     def root_queues(self):
         """Retrieve root queues from task's body."""
-        instruction = self.body["instruction"]
+        instruction = self.body[Body.INSTRUCTION]
         return [queue_code for queue_code, parent_code in instruction.iteritems()
                 if queue_code == parent_code]
 
@@ -70,13 +71,13 @@ class Action(object):
         Recovers queue(s) of next task(s)
         by increasing the sequence.
         """
-        instruction = self.body["instruction"]
-        current_queue = self.body["curr_task_code"]
+        instruction = self.body[Body.INSTRUCTION]
+        current_queue = self.body[Body.CURR_TASK_CODE]
         return [queue_code for queue_code, parent_code in instruction.iteritems()
                 if queue_code != parent_code and current_queue == parent_code]
 
     def set_current_task(self, queue):
-        self.body["curr_task_code"] = queue
+        self.body[Body.CURR_TASK_CODE] = queue
 
     def set_task_status(self, status):
-        self.body["status"] = status
+        self.body[Body.STATUS] = status
