@@ -113,8 +113,10 @@ class ActionHeartbeat(Action):
         for queue_code in self.queue_codes:
             self.send_trigger_message(
                 self.body,
-                "HEARBEAT emitted to queue %s" % queue_code,
+                "HEARBEAT emitted to queue {}".format(queue_code),
                 queue_code)
+            print "HEARTBEAT emitted to queue {}".format(queue_code)
+            time.sleep(2)
 
     def set_message_properties(self, priority=0, message_id=0):
         self.properties = BasicProperties(
