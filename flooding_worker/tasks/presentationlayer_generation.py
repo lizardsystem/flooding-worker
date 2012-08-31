@@ -761,7 +761,7 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
                 pl.delete()
 
 
-def perform_presentation_generation(scenario_id):
+def perform_presentation_generation(scenario_id, tasktype_id):
     """main routine
 
     """
@@ -809,5 +809,7 @@ def perform_presentation_generation(scenario_id):
             log.debug('type no geom')
             log.debug('this is not for this task')
             pass
+        
+    #TODO SET SCENARIO STATUS DEPENDED ON TASKTYPE_ID
 
     return True

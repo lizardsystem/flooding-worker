@@ -106,8 +106,9 @@ def perform_task(
             remarks = ('presentationlayer_generation-' +
                        presentationlayer_generation.__revision__ +
                        ' uitvoerder: %02d/' % worker_nr)
-            success_code = (presentationlayer_generation.
-                            perform_presentation_generation(scenario_id))
+            success_code = (
+                presentationlayer_generation.perform_presentation_generation(
+                    scenario_id, tasktype_id))
 
         elif tasktype_id == TASK_HISSSM_SIMULATION_160:
             log.debug("execute TASK_HISSSM_SIMULATION_160")
@@ -144,8 +145,9 @@ def perform_task(
             remarks = ('presentationlayer_generation-' +
                        presentationlayer_generation.__revision__ +
                        ' uitvoerder: %02d/' % worker_nr)
-            success_code = (presentationlayer_generation.
-                            perform_presentation_generation(scenario_id))
+            success_code = (
+                presentationlayer_generation.perform_presentation_generation(
+                    scenario_id, tasktype_id))
 
         else:
             log.warning("selected a '%d' task but don't know what it is" %
