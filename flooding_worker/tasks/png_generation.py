@@ -169,6 +169,9 @@ def common_generation(scenario_id, tmp_dir, source_programs):
         log.debug("remove temporary directory")
         os.rmdir(os.path.join(tmp_dir, result.resulttype.name))
 
+        log.debug("Set pngloc to result:")
+        log.debug("rel_output_dir_name: {0}, result.resulttype.name: {1}, infile_asc: {2}.".format(
+                rel_output_dir_name, result.resulttype.name, infile_asc))
         result.resultpngloc =  os.path.join(rel_output_dir_name, result.resulttype.name, infile_asc + ".png")
 
         result.save()
