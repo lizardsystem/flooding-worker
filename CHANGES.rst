@@ -2,7 +2,7 @@ Changelog of flooding-worker
 ===================================================
 
 
-1.1 (unreleased)
+1.1 (2012-09-03)
 ----------------
 
 - Added functionality to update scenario status (perform_task.py, presentationlayer_generation.py)
