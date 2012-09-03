@@ -5,7 +5,7 @@ Changelog of flooding-worker
 1.1 (unreleased)
 ----------------
 
-- Changed ordering of views.
+- Added functionality to update scenario status (perform_task.py, presentationlayer_generation.py)
 
 
 1.0 (2012-08-29)

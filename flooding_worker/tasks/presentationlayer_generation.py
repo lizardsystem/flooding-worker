@@ -761,6 +761,23 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
                 pl.delete()
 
 
+def register_task_processing(scenario, tasktype, is_successful):
+    """
+    Update the scenario's status.
+    """
+    from flooding_worker.perform_task import (
+        TASK_SOBEK_PRESENTATION_GENERATION_155,
+        TASK_HISSSM_PRESENTATION_GENERATION_185,)
+    if tasktype == TASK_SOBEK_PRESENTATION_GENERATION_155:
+        scenario.has_sobek_presentaition = is_successful
+        scenario.update_status()
+    elif tasktype == TASK_HISSSM_PRESENTATION_GENERATION_185:
+        scenario.has_hisssm_presentation = is_successful
+        scenario.update.status()
+    else:
+        log.warning("Tasktype {} is not registred.".format(tasktype))
+
+
 def perform_presentation_generation(scenario_id, tasktype_id):
     """main routine
 
@@ -769,7 +786,9 @@ def perform_presentation_generation(scenario_id, tasktype_id):
     #get ids of results of this scenario
     #results_list = list(scenario.result_set.values_list('id', flat=True))
     #get all active presentation_types, made from results of flooding
-    presentation_types = PresentationType.objects.filter(active=True, custom_indicator__name='flooding_result').exclude(code='damage_embankments')
+    presentation_types = PresentationType.objects.filter(
+        active=True, custom_indicator__name='flooding_result').exclude(
+        code='damage_embankments')
 
     for pt in presentation_types:
         model_node, model_branch = (None, None)
@@ -809,7 +828,9 @@ def perform_presentation_generation(scenario_id, tasktype_id):
             log.debug('type no geom')
             log.debug('this is not for this task')
             pass
-        
-    #TODO SET SCENARIO STATUS DEPENDED ON TASKTYPE_ID
 
-    return True
+    is_successful = True
+    register_task_processing(scenario, tasktype_id, is_successful)
+
+    return is_successful
+
