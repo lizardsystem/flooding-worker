@@ -148,9 +148,6 @@ def perform_task(
             success_code = (
                 presentationlayer_generation.perform_presentation_generation(
                     scenario_id, tasktype_id))
-            if success_code:
-               presentationlayer_generation.register_processing(
-                   scenario_id, tasktype_id)
 
         else:
             log.warning("selected a '%d' task but don't know what it is" %
