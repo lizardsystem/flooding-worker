@@ -773,7 +773,7 @@ def register_task_processing(scenario, tasktype, is_successful):
         scenario.update_status()
     elif tasktype == TASK_HISSSM_PRESENTATION_GENERATION_185:
         scenario.has_hisssm_presentation = is_successful
-        scenario.update.status()
+        scenario.update_status()
     else:
         log.warning("Tasktype {} is not registred.".format(tasktype))
 
