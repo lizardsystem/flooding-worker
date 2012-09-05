@@ -38,6 +38,7 @@
 
 __revision__ = "$Rev$"[6:-2]
 
+from django import db
 from zipfile import ZipFile, ZIP_DEFLATED
 from flooding_lib.models import Scenario, Result, ResultType
 from flooding_base.models import Setting
@@ -183,6 +184,9 @@ def perform_HISSSM_calculation(scenario_id, tmp_location, timeout=0):
     temp.write(batchDotIni % {'year': year, 'kenmerk': kenmerk})
     temp.close()
 
+    log.debug("Close connection before spawning a subprocess.")
+    db.close_connection()
+
     log.debug("step 3: run the external tool")
     log.debug("location = " + location)
     os.chdir(os.path.join(location, "demo"))
@@ -223,7 +227,9 @@ def perform_HISSSM_calculation(scenario_id, tmp_location, timeout=0):
         result.unit = unit
         result.value = value
         result.save()
-
+    
+    log.debug("close db connection to avoid a idle process.")
+    db.close_connection()
     log.debug("task finished")
     return True
 

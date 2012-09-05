@@ -48,6 +48,8 @@ log = logging.getLogger('nens')
 from flooding_lib.models import Scenario, ResultType
 from flooding_base.models import Setting
 
+from django import db
+
 from zipfile import ZipFile, ZIP_DEFLATED
 
 default_sobek_locations = {
@@ -252,11 +254,11 @@ def perform_sobek_simulation(scenario_id,
 
     program_name = os.path.join(sobek_location, "programs", "simulate.exe")
     configuration = os.path.join(cmtwork_dir, 'simulate.ini')
-
+    log.debug("Close connection before spawning a subprocess.")
+    db.close_connection()
     log.debug('about to spawn the simulate subprocess')
     cmd, cwd = [program_name, configuration], cmtwork_dir
     log.debug('command_list: %s, current_dir: %s' % (cmd, cwd))
-
     os.chdir(cwd)
     child = subprocess.Popen(cmd)
 
@@ -332,6 +334,7 @@ def perform_sobek_simulation(scenario_id,
     remarks = 'rev: ' + __revision__ + "\n" + remarks
 
     log.info(remarks)
-
+    log.debug("close db connection to avoid a idle process.")
+    db.close_connection()
     successful = int(re.findall(r'\d+', remarks)[0]) == 0
     return successful
