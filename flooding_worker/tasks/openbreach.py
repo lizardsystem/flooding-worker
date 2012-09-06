@@ -46,6 +46,7 @@ sys.setdefaultencoding('utf-8')
 
 import logging, math, os, datetime
 from nens import sobek, asc
+from django import db
 
 import flooding_lib as flooding
 import flooding_base as base
@@ -1277,7 +1278,8 @@ def compute_sobek_model(scenario, tmp_dir = 'c:/tmp/1/'):
     s.collect_initial_data()
     s.compute_sobek_model()
     s.save_sobek_model()
-
+    log.debug("close db connection to avoid an idle process.")
+    db.close_connection()
     return True
 
 

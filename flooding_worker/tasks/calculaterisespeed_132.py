@@ -47,6 +47,7 @@ log = logging.getLogger('nens')
 
 import nens.asc
 
+from django import db
 from zipfile import ZipFile, ZIP_DEFLATED
 from flooding_lib.models import Scenario, Result, ResultType
 from flooding_base.models import Setting
@@ -253,6 +254,7 @@ def perform_calculation(scenario_id, tmp_location, timeout=0):
         result.value = value
         result.save()
 
-    log.debug("tasks")
-
+    log.debug("Finish task.")
+    log.debug("close db connection to avoid an idle process.")
+    db.close_connection()
     return True

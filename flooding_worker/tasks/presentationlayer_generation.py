@@ -37,6 +37,7 @@ __revision__ = "$Rev: 8118 $"[6:-2]
 import sys
 import logging
 
+from django import db
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 
 from flooding_lib.models import  Scenario, \
@@ -831,6 +832,7 @@ def perform_presentation_generation(scenario_id, tasktype_id):
 
     is_successful = True
     register_task_processing(scenario, tasktype_id, is_successful)
-
+    log.debug("Finish task.")
+    log.debug("close db connection to avoid an idle process.")
+    db.close_connection()
     return is_successful
-

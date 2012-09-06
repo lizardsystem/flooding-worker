@@ -227,8 +227,8 @@ def perform_HISSSM_calculation(scenario_id, tmp_location, timeout=0):
         result.unit = unit
         result.value = value
         result.save()
-    
-    log.debug("close db connection to avoid a idle process.")
+
+    log.debug("close db connection to avoid an idle process.")
     db.close_connection()
     log.debug("task finished")
     return True

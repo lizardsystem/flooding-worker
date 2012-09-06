@@ -5,6 +5,7 @@
 __revision__ = "$Rev: 9979 $"[6:-2]
 
 import logging
+from django import db
 log = logging.getLogger('nens.lizard.kadebreuk.lognormal')
 
 
@@ -155,6 +156,8 @@ def perform_calculation(scenario_id, tmp_location, timeout=0):
         result.save()
 
     log.debug("finish task")
+    log.debug("close db connection to avoid an idle process.")
+    db.close_connection()
     return True
 
 if __name__ == '__main__':

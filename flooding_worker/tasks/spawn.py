@@ -334,7 +334,7 @@ def perform_sobek_simulation(scenario_id,
     remarks = 'rev: ' + __revision__ + "\n" + remarks
 
     log.info(remarks)
-    log.debug("close db connection to avoid a idle process.")
+    log.debug("close db connection to avoid an idle process.")
     db.close_connection()
     successful = int(re.findall(r'\d+', remarks)[0]) == 0
     return successful

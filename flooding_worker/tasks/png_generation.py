@@ -33,6 +33,7 @@ import logging
 
 log = logging.getLogger('nens.lizard.kadebreuk.uitvoerder')
 
+
 def set_broker_logging_handler(broker_handler=None):
     """
     """
@@ -52,10 +53,9 @@ if __name__ == '__main__':
     import lizard.settings
     setup_environ(lizard.settings)
 
-from django.db import transaction
+from django import db
 import os, stat
-from zipfile import ZipFile, ZIP_DEFLATED
-from flooding_lib.models import Scenario, Result, ResultType
+from flooding_lib.models import Scenario
 from flooding_base.models import Setting
 
 
@@ -77,7 +77,6 @@ def common_generation(scenario_id, tmp_dir, source_programs):
     results = scenario.result_set.filter(resulttype__program__in=source_programs, resulttype__color_mapping_name__isnull=False).exclude(resulttype__color_mapping_name="")
 
     log.debug("selected results for scenario: %s" % str(results))
-
 
     if tmp_dir[-1:] not in ['/', '\\']:
         tmp_dir += '/'
@@ -123,8 +122,6 @@ def common_generation(scenario_id, tmp_dir, source_programs):
         log.info("copy colormappings from source '%s' into destination '%s' directory" %
                   (cm_location, os.path.join(abs_output_dir_name, result.resulttype.name)))
 
-
-
         cm_content = file(os.path.join(cm_location, color_mapping_name)).read()
 
         colormapping_abs = os.path.join(abs_output_dir_name, result.resulttype.name, 'colormapping.csv')
@@ -140,9 +137,9 @@ def common_generation(scenario_id, tmp_dir, source_programs):
              for name in os.listdir(os.path.join(tmp_dir, result.resulttype.name))
              if os.path.isfile(os.path.join(tmp_dir, result.resulttype.name, name))]
 
-        log.debug("unpack all files into the temporary directory from file %s."%result.resultloc)
+        log.debug("unpack all files into the temporary directory from file %s." % result.resultloc)
         if result.resultloc[-3:] == 'zip':
-            log.debug("open zipfile %s"%(os.path.join(destination_dir, result.resultloc)))
+            log.debug("open zipfile %s" % (os.path.join(destination_dir, result.resultloc)))
             input_file = zipfile.ZipFile(os.path.join(destination_dir, result.resultloc))
             for name in input_file.namelist():
                 content = input_file.read(name)
@@ -157,14 +154,13 @@ def common_generation(scenario_id, tmp_dir, source_programs):
             temp.close()
             input_file.close()
 
-
         # invoke part that will generate the png(s) based on the asc/inc files.
         infile_asc = compute_png_files(result, abs_output_dir_name, os.path.join(tmp_dir, result.resulttype.name + '/'),
                                        def_grid, colormapping_abs)
 
         log.debug("empty temporary directory")
         [os.unlink(os.path.join(tmp_dir, result.resulttype.name,  name))
-         for name in os.listdir(os.path.join(tmp_dir,result.resulttype.name))
+         for name in os.listdir(os.path.join(tmp_dir, result.resulttype.name))
          if os.path.isfile(os.path.join(tmp_dir, result.resulttype.name, name))]
         log.debug("remove temporary directory")
         os.rmdir(os.path.join(tmp_dir, result.resulttype.name))
@@ -172,12 +168,12 @@ def common_generation(scenario_id, tmp_dir, source_programs):
         log.debug("Set pngloc to result:")
         log.debug("rel_output_dir_name: {0}, result.resulttype.name: {1}, infile_asc: {2}.".format(
                 rel_output_dir_name, result.resulttype.name, infile_asc))
-        result.resultpngloc =  os.path.join(rel_output_dir_name, result.resulttype.name, infile_asc + ".png")
+        result.resultpngloc = os.path.join(rel_output_dir_name, result.resulttype.name, infile_asc + ".png")
 
         result.save()
 
-
     return True
+
 
 def compute_png_files(result, abs_output_dir_name, tmp_dir, def_grid, colormapping_abs):
     """subroutine isolating the png computing logic.
@@ -198,10 +194,10 @@ def compute_png_files(result, abs_output_dir_name, tmp_dir, def_grid, colormappi
     candidates = os.listdir(tmp_dir)
     log.debug("content of temporary directory: %s" % candidates)
 
-    log.debug('look for files which match "%s"'%result.resulttype.content_names_re)
+    log.debug('look for files which match "%s"' % result.resulttype.content_names_re)
     accepted_files_re = re.compile(result.resulttype.content_names_re)
 
-    log.debug('files (candidates for match) are: %s'%str(candidates))
+    log.debug('files (candidates for match) are: %s' % str(candidates))
     input_files = [i for i in candidates if accepted_files_re.match(i)]
     log.debug("choose input for image production from %s." % input_files)
 
@@ -209,11 +205,11 @@ def compute_png_files(result, abs_output_dir_name, tmp_dir, def_grid, colormappi
     if inc_files:
         log.debug("first candidate is a .inc file.")
         input_files = inc_files[:1]
-        basename = input_files[0].replace('_','')[:4]
+        basename = input_files[0].replace('_', '')[:4]
     else:
         log.debug("no .inc files, use all .asc files.")
         input_files = [i for i in input_files if i.endswith('.asc')]
-        log.debug('input files are: %s'%str(input_files))
+        log.debug('input files are: %s' % str(input_files))
         if len(input_files) == 1:
             basename = input_files[0][:8]
         elif len(input_files) > 1:
@@ -252,7 +248,7 @@ def compute_png_files(result, abs_output_dir_name, tmp_dir, def_grid, colormappi
 
     if 0:
         log.debug("transform each grid to a 8 bit gif image")
-        item.save("name.gif", transparency = 0)
+        item.save("name.gif", transparency=0)
     else:
         log.debug("saving who knows how many files as pngs")
 
@@ -273,18 +269,29 @@ def compute_png_files(result, abs_output_dir_name, tmp_dir, def_grid, colormappi
             log.debug("saved just one file.")
         else:
             for i, item in enumerate(grids):
-                save_png_and_pgw(item, os.path.join(abs_output_dir_name, result.resulttype.name, basename + '%04d' % i ))
+                save_png_and_pgw(item, os.path.join(abs_output_dir_name, result.resulttype.name, basename + '%04d' % i))
             result.firstnr = 0
             result.lastnr = i
-            log.debug("saved %d files." %  (i+1))
+            log.debug("saved %d files." % (i + 1))
 
     return (basename + "####")[:8]
 
+
 def sobek(scenario_id, tmp_dir):
-    return common_generation(scenario_id, tmp_dir, [SOBEK_PROGRAM_ID, IMPORT_PROGRAM_ID])
+    success = common_generation(
+        scenario_id, tmp_dir, [SOBEK_PROGRAM_ID, IMPORT_PROGRAM_ID])
+    log.debug("Finish task.")
+    log.debug("close db connection to avoid an idle process.")
+    db.close_connection()
+    return success
+
 
 def his_ssm(scenario_id, tmp_dir):
-    return common_generation(scenario_id, tmp_dir, [HISSSM_PROGRAM_ID])
+    success = common_generation(scenario_id, tmp_dir, [HISSSM_PROGRAM_ID])
+    log.debug("Finish task.")
+    log.debug("close db connection to avoid an idle process.")
+    db.close_connection()
+    return success
 
 if __name__ == '__main__':
     pass
