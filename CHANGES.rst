@@ -2,7 +2,7 @@ Changelog of flooding-worker
 ===================================================
 
 
-1.2 (unreleased)
+1.2 (2012-09-07)
 ----------------
 
 - Close connection before spawning subprocess and on the end of the task.
