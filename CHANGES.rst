@@ -2,7 +2,7 @@ Changelog of flooding-worker
 ===================================================
 
 
-1.3 (unreleased)
+1.3 (2012-09-14)
 ----------------
 
 - Close db connection in png_genaration.py before saving images.
