@@ -74,7 +74,9 @@ def common_generation(scenario_id, tmp_dir, source_programs):
     source_dir = Setting.objects.get(key='SOURCE_DIR').value
 
     log.debug("select results relative to scenario %s" % scenario_id)
-    results = scenario.result_set.filter(resulttype__program__in=source_programs, resulttype__color_mapping_name__isnull=False).exclude(resulttype__color_mapping_name="")
+    results = scenario.result_set.filter(resulttype__program__in=source_programs,
+                                         resulttype__color_mapping_name__isnull=False)
+    results = results.exclude(resulttype__color_mapping_name="")
 
     log.debug("selected results for scenario: %s" % str(results))
 
@@ -114,13 +116,13 @@ def common_generation(scenario_id, tmp_dir, source_programs):
 
         cm_location = os.path.join(source_dir, "colormappings")
 
-        if result.resulttype.id == 0 and scenario.main_project.color_mapping_name is not None:
+        if result.resulttype.id == 0 and scenario.main_project.color_mapping_name not in [None, ""]:
             color_mapping_name = scenario.main_project.color_mapping_name
         else:
             color_mapping_name = result.resulttype.color_mapping_name
 
-        log.info("copy colormappings from source '%s' into destination '%s' directory" %
-                  (cm_location, os.path.join(abs_output_dir_name, result.resulttype.name)))
+        log.info("copy colormappings from source '%s' into destination '%s' directory" % (
+                cm_location, os.path.join(abs_output_dir_name, result.resulttype.name)))
 
         cm_content = file(os.path.join(cm_location, color_mapping_name)).read()
 
@@ -268,8 +270,11 @@ def compute_png_files(result, abs_output_dir_name, tmp_dir, def_grid, colormappi
             save_png_and_pgw(grids.next(), os.path.join(abs_output_dir_name, result.resulttype.name, basename))
             log.debug("saved just one file.")
         else:
+            resulttype_name = result.resulttype.name
+            log.debug("close db connection to avoid an idle process.")
+            db.close_connection()
             for i, item in enumerate(grids):
-                save_png_and_pgw(item, os.path.join(abs_output_dir_name, result.resulttype.name, basename + '%04d' % i))
+                save_png_and_pgw(item, os.path.join(abs_output_dir_name, resulttype_name, basename + '%04d' % i))
             result.firstnr = 0
             result.lastnr = i
             log.debug("saved %d files." % (i + 1))

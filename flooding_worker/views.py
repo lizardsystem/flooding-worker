@@ -14,11 +14,15 @@ class WorkflowTasksView(View):
     template = 'workflow_tasks.html'
 
     def get(self, request, workflow_id=None):
+        if request.user.is_authenticated is False:
+            return render_to_response('403.html')
         context = {'tasks': self.tasks(workflow_id),
                    'workflow': self.get_workflow(workflow_id)}
         return render_to_response(self.template, context)
 
     def post(self, request, workflow_id=None):
+        if request.user.is_authenticated is False:
+            return render_to_response('403.html')
         task_id = request.POST.get('task_id')
         task_code = request.POST.get('task_code')
         success = executor.start_task(task_id)
@@ -48,6 +52,8 @@ class WorkflowsView(View):
     template = 'workflows.html'
 
     def get(self, request, scenario_id=None):
+        if request.user.is_authenticated is False:
+            return render_to_response('403.html')
         workflows = Workflow.objects.filter(
             scenario=scenario_id).order_by('-tcreated')
 
@@ -63,6 +69,8 @@ class LoggingView(View):
 
     def get(self, request, workflow_id=None, task_id=None, scenario_id=None,
             step=1, amount_per_step=20):
+        if request.user.is_authenticated is False:
+            return render_to_response('403.html')
         context = {'scenario_id': scenario_id,
                    'workflow_id': workflow_id,
                    'task_id': task_id}

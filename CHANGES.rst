@@ -5,7 +5,11 @@ Changelog of flooding-worker
 1.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Close db connection in png_genaration.py before saving images.
+
+- Exclude an empty value of color_mapping_name field bij in png_generation.py.
+
+- Added authentication check.
 
 
 1.2 (2012-09-07)

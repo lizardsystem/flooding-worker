@@ -1,4 +1,5 @@
 from flooding_worker.models import Workflow
+from flooding_worker.models import Worker
 from flooding_worker.models import Logging
 from flooding_worker.models import WorkflowTask
 from flooding_worker.models import WorkflowTemplate
@@ -24,23 +25,46 @@ class LoggingInline(admin.TabularInline):
     extra = 0
 
 
+class WorkerAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'worker_nr',
+        'status',
+        'time',
+        'node',
+        'queue_code',)
+
+    list_filter = ('queue_code', 'node',)
+
+
+class LoggingAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'workflow',
+        'task',
+        'time',
+        'message',
+        'worker',
+        'is_heartbeat',)
+
+    list_filter = ('worker', 'workflow', 'task', 'is_heartbeat',)
+
+
 class WorkflowTemplateTaskInline(admin.TabularInline):
     model = WorkflowTemplateTask
     extra = 0
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    fieldsets = [
-        (None,          {'fields': ['code', 'scenario']})
-    ]
-    inlines = [TaskInline]
+    list_display = (
+        'id',
+        'code',
+        'template',
+        'scenario',
+        'tstart',
+        'tfinished',)
 
-
-class WorkerAdmin(admin.ModelAdmin):
-    fieldsets = [
-        (None,          {'fields': ['name']})
-    ]
-    inlines = [WorkflowInline]
+    list_filter = ('scenario',)
 
 
 class WorkflowTemplateAdmin(admin.ModelAdmin):
@@ -54,3 +78,5 @@ admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowTask)
 admin.site.register(TaskType)
 admin.site.register(WorkflowTemplate, WorkflowTemplateAdmin)
+admin.site.register(Logging, LoggingAdmin)
+admin.site.register(Worker, WorkerAdmin)
