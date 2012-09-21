@@ -436,8 +436,9 @@ def get_or_create_geo_presentation_source(
             source_link[part], new = SourceLink.objects.get_or_create(
                 link_id=link_id, sourcelinktype=link_type_model,
                 type='shapefile_' + part)
-            source[part], source_new[part] = source_link[part].presentationsource.get_or_create(
-                type=PresentationSource.SOURCE_TYPE_SHAPEFILE)
+            source[part], source_new[part] = (
+                source_link[part].presentationsource.get_or_create(
+                type=PresentationSource.SOURCE_TYPE_SHAPEFILE))
 
             if not source_new[part]:
                 #shapefile is generated before. get some information to check
@@ -446,9 +447,10 @@ def get_or_create_geo_presentation_source(
                     date_origin = source[part].t_origin
 
     #make shapefiles
-    successful, shapefiles, date_origin_new = get_or_create_model_shapefile_def(
-        model_location, os.path.join(presentation_dir, destination),
-        generate_parts, model_srid, date_origin)
+    successful, shapefiles, date_origin_new = (
+        get_or_create_model_shapefile_def(
+            model_location, os.path.join(presentation_dir, destination),
+            generate_parts, model_srid, date_origin))
 
     if not successful:
         for part in generate_parts:
@@ -483,7 +485,9 @@ def get_or_create_value_presentation_source(
     scenario, pt, get_animation_info,
     check_timestamp_original_sourcefile):
     '''
-        create PresentationSource objects for given Flooding.Scenario and PresentationType
+        create PresentationSource objects for given Flooding.Scenario
+        and PresentationType
+
         input:
             scenario: Flooding.Scenario object
             pt: PresentationType object
@@ -505,7 +509,8 @@ def get_or_create_value_presentation_source(
 
         result = scenario.result_set.get(resulttype__presentationtype=pt)
 
-        link_type, _ = SourceLinkType.objects.get_or_create(name='flooding_scenario_value')
+        link_type, _ = SourceLinkType.objects.get_or_create(
+            name='flooding_scenario_value')
         source_link, new = SourceLink.objects.get_or_create(
             link_id=str(scenario.id), sourcelinktype=link_type,
             type='fl_rlt_' + str(result.id))
@@ -514,7 +519,8 @@ def get_or_create_value_presentation_source(
 
         if new or source.file_location is None:
             new = True
-        elif not os.path.isfile(os.path.join(presentation_dir, rel_path(source.file_location))):
+        elif not os.path.isfile(
+            os.path.join(presentation_dir, rel_path(source.file_location))):
             new = True
 
         #source
@@ -546,7 +552,8 @@ def get_or_create_value_presentation_source(
             if not os.path.isdir(output_path):
                 os.makedirs(output_path)
 
-            destination_file_name = os.path.join(presentation_dir, output_file_name)
+            destination_file_name = os.path.join(
+                presentation_dir, output_file_name)
             log.debug('source file is ' + str(source_file_name))
             log.debug('destination is ' + str(destination_file_name))
 
@@ -556,11 +563,13 @@ def get_or_create_value_presentation_source(
                 else:
                     dest = ZipFile(str(destination_file_name)[:-3] + '.zip',
                                    mode="w", compression=ZIP_DEFLATED)
-                    dest.writestr(filename, file(source_file_name, 'rb').read())
+                    dest.writestr(
+                        filename, file(source_file_name, 'rb').read())
                     dest.close()
 
                 source.file_location = output_file_name
-                source.t_original = datetime.datetime.fromtimestamp(os.stat(str(source_file_name))[8])
+                source.t_original = datetime.datetime.fromtimestamp(
+                    os.stat(str(source_file_name))[8])
                 source.t_source = datetime.datetime.now()
                 source.save()
                 get_animation_info = True
@@ -573,11 +582,14 @@ def get_or_create_value_presentation_source(
             log.debug('get animation information')
             zip_name = os.path.join(presentation_dir, output_file_name)
             input_file = ZipFile(zip_name, "r")
-            his = HISFile(Stream(input_file.read(input_file.filelist[0].filename)))
+            his = HISFile(
+                Stream(input_file.read(input_file.filelist[0].filename)))
             input_file.close()
 
-            delta = (his.get_datetime_of_timestep(1) - his.get_datetime_of_timestep(0))
-            animation['delta_timestep'] = delta.days + float(delta.seconds) / (24 * 60 * 60)
+            delta = (his.get_datetime_of_timestep(1) -
+                     his.get_datetime_of_timestep(0))
+            animation['delta_timestep'] = (
+                delta.days + float(delta.seconds) / (24 * 60 * 60))
             animation['firstnr'] = 0
             animation['lastnr'] = his.size() - 1
             animation['startnr'] = 0
@@ -604,13 +616,15 @@ def get_or_create_shape_layer(scenario, pt, only_geom):
         if not only_geom:
             if not Animation.objects.filter(presentationlayer=pl).count() > 0:
                 get_animation_info = True
-            value_successful, value_source, animation, value_new = get_or_create_value_presentation_source(
-                scenario, pt, get_animation_info, not ps_new)
+            value_successful, value_source, animation, value_new = (
+                get_or_create_value_presentation_source(
+                    scenario, pt, get_animation_info, not ps_new))
 
             if not animation == None and not animation == {}:
                 log.debug('save animation ' + str(animation))
                 #animation['presentationlayer'] = pl
-                anim, new = Animation.objects.get_or_create(presentationlayer=pl, defaults=animation)
+                anim, new = Animation.objects.get_or_create(
+                    presentationlayer=pl, defaults=animation)
                 if new:
                     log.debug('animation is new')
                 anim.save()
@@ -619,7 +633,8 @@ def get_or_create_shape_layer(scenario, pt, only_geom):
 
         else:
             value_successful = False
-        geo_successful, geo_source, geo_new = get_or_create_geo_presentation_source(scenario, pt, not ps_new)
+        geo_successful, geo_source, geo_new = (
+            get_or_create_geo_presentation_source(scenario, pt, not ps_new))
         if geo_new:
             log.debug('geo source is new')
     except IOError, e:
@@ -655,7 +670,8 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
     log.debug('!!!get_or_create_pngserie_with_defaultlegend_from_old_results')
 
     result = Result.objects.filter(
-        scenario=scenario, resulttype__resulttype_presentationtype__presentationtype=pt)
+        scenario=scenario,
+        resulttype__resulttype_presentationtype__presentationtype=pt)
 
     if result.count() > 0:
         #check if layer is already there
@@ -667,7 +683,8 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
             scenario_presentationlayer__scenario=scenario,
             defaults={"value": result.value})
         if pl_new:
-            Scenario_PresentationLayer.objects.create(scenario=scenario, presentationlayer=pl)
+            Scenario_PresentationLayer.objects.create(
+                scenario=scenario, presentationlayer=pl)
             log.info("pl_new id: " + str(pl.id))
 
         pl.value = result.value
@@ -676,7 +693,8 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
         try:
             log.info(result.resultpngloc)
             dest_dir = Setting.objects.get(key='DESTINATION_DIR').value
-            presentation_dir = Setting.objects.get(key='PRESENTATION_DIR').value
+            presentation_dir = Setting.objects.get(
+                key='PRESENTATION_DIR').value
             if result.resultpngloc is not None:
                 log.debug('read grid information from pgw en png file!')
                 resultpngloc = result.resultpngloc.replace('\\', '/')
@@ -699,7 +717,8 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
                 south = north - height * gridsize
 
                 old_file = resultpngloc.split('/')
-                output_dir_name = os.path.join('flooding', 'scenario', str(scenario.id), old_file[-2])
+                output_dir_name = os.path.join(
+                    'flooding', 'scenario', str(scenario.id), old_file[-2])
                 output_file_name = os.path.join(output_dir_name, old_file[-1])
 
                 s_dir = os.path.join(dest_dir, os.path.dirname(resultpngloc))
@@ -707,7 +726,9 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
                 #destination dir
                 d_dir = os.path.join(presentation_dir, output_dir_name)
                 if os.path.isdir(d_dir):
-                    rmtree(d_dir)  # or move(presentation_dir + output_dir_name, presentation_dir + output_dir_name + '_old')
+                    rmtree(d_dir)  # or move(presentation_dir +
+                                   # output_dir_name, presentation_dir
+                                   # + output_dir_name + '_old')
 
                 log.debug('source dir is ' + str(s_dir))
                 log.debug('destination dir is ' + str(d_dir))
@@ -725,7 +746,8 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
 
                 grid, new = PresentationGrid.objects.get_or_create(
                     presentationlayer=pl,
-                    defaults={'rownr': height, 'colnr': width, 'gridsize': gridsize})
+                    defaults={
+                        'rownr': height, 'colnr': width, 'gridsize': gridsize})
                 grid.bbox_orignal_srid = 28992
                 grid.png_default_legend = source
 
@@ -752,7 +774,9 @@ def get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt):
                     animation.firstnr = result.firstnr
                     animation.lastnr = result.lastnr
                     animation.startnr = result.startnr
-                    log.debug("save animation with numbers %i tot %i" % (result.firstnr, result.lastnr))
+                    log.debug(
+                        "save animation with numbers %i tot %i" %
+                        (result.firstnr, result.lastnr))
                     animation.save()
 
         except IOError as e:
@@ -783,22 +807,18 @@ def perform_presentation_generation(scenario_id, tasktype_id):
     """main routine
 
     """
-    scenario = Scenario.objects.get(id=scenario_id)
-    #get ids of results of this scenario
-    #results_list = list(scenario.result_set.values_list('id', flat=True))
+    scenario = Scenario.objects.get(pk=scenario_id)
+
     #get all active presentation_types, made from results of flooding
     presentation_types = PresentationType.objects.filter(
         active=True, custom_indicator__name='flooding_result').exclude(
         code='damage_embankments')
 
     for pt in presentation_types:
-        model_node, model_branch = (None, None)
-        #check location types, create shapefile
-
         if pt.geo_type == PresentationType.GEO_TYPE_GRID:
             log.debug('type grid')
-            get_or_create_pngserie_with_defaultlegend_from_old_results(scenario, pt)
-            pass
+            get_or_create_pngserie_with_defaultlegend_from_old_results(
+                scenario, pt)
         elif pt.geo_type in [PresentationType.GEO_TYPE_POLYGON,
                              PresentationType.GEO_TYPE_LINE,
                              PresentationType.GEO_TYPE_POINT]:
@@ -807,15 +827,11 @@ def perform_presentation_generation(scenario_id, tasktype_id):
         elif pt.geo_type == PresentationType.GEO_TYPE_NO_GEOM:
             log.debug('type no geom')
             log.debug('this is not for this task')
-            pass
 
     presentation_types = PresentationType.objects.filter(
         active=True, custom_indicator__name='flooding_geom')
 
     for pt in presentation_types:
-        model_node, model_branch = (None, None)
-        #check location types, create shapefile
-
         if pt.geo_type == PresentationType.GEO_TYPE_GRID:
             log.debug('type grid')
             log.debug('this is not for this task')

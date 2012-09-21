@@ -5,7 +5,9 @@ Changelog of flooding-worker
 1.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+Added task that can calculate scenario statistics (namely, total
+inundation area and inundated volume). Also made it into a management
+command for ease of use.
 
 
 1.3 (2012-09-14)
