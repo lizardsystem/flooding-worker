@@ -2,7 +2,7 @@ Changelog of flooding-worker
 ===================================================
 
 
-1.4 (unreleased)
+1.4 (2012-09-21)
 ----------------
 
 Added task that can calculate scenario statistics (namely, total
