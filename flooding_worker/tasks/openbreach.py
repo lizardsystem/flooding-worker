@@ -628,8 +628,8 @@ class Scenario:
 
             if loc_cutoff.cutofflocation.externalwater_set.count() > 0:
                 log.debug('external cuttofflocation')
-                pool_ref = pool2
-                node_id = loc_cutoff.cutofflocation.cutofflocationsobekmodelsetting_set.get(sobekmodel=self.breachlinkproperty.sobekmodel_externalwater_id).sobekid
+                pool_ref = self.pool
+                node_id = 'c_' + loc_cutoff.cutofflocation.cutofflocationsobekmodelsetting_set.get(sobekmodel=self.breachlinkproperty.sobekmodel_externalwater_id).sobekid
             else:
                 log.debug('internal cuttofflocation')
                 pool_ref = self.pool

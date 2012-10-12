@@ -16,6 +16,7 @@ TASK_SOBEK_EMBANKMENT_DAMAGE_162 = 162
 TASK_HISSSM_PNG_GENERATION_180 = 180
 TASK_SOBEK_PRESENTATION_GENERATION_155 = 155
 TASK_HISSSM_PRESENTATION_GENERATION_185 = 185
+TASK_CALCULATE_STATISTICS = 190
 
 
 def perform_task(
@@ -148,6 +149,11 @@ def perform_task(
             success_code = (
                 presentationlayer_generation.perform_presentation_generation(
                     scenario_id, tasktype_id))
+
+        elif tasktype_id == TASK_CALCULATE_STATISTICS:
+            from flooding_worker.tasks import calculate_scenario_statistics
+            calculate_scenario_statistics.calculate_statistics(scenario_id)
+            success_code = True  # In case of problems, an exception is raised
 
         else:
             log.warning("selected a '%d' task but don't know what it is" %
