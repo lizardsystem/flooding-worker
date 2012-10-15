@@ -35,25 +35,25 @@ def calculate_statistics(scenario_id):
 
     # We need the max water depth .asc file, which is in the results
     # of resulttype 1.
-    dataset = None
+    arr = None
     with files.temporarily_unzipped(result_zip(scenario, 1)) as names:
         for name in names:
             if os.path.basename(name) == 'dm1maxd0.asc':
                 dataset = gdal.Open(name)
+                # Read the data into a masked array
+                arr = dataset.ReadAsArray()
+                ndv = dataset.GetRasterBand(1).GetNoDataValue()
+                masked_array = ma.array(arr, mask=(arr == ndv))
+                geo_transform = dataset.GetGeoTransform()
+                del dataset  # Does this close the file?
                 break
 
-    if dataset is None:
+    if arr is None:
         raise AssertionError(
             "Zip file for resulttype 1 didn't include a dm1maxd0.asc.")
 
-    # Read the data into a masked array
-    arr = dataset.ReadAsArray()
-    ndv = dataset.GetRasterBand(1).GetNoDataValue()
-    masked_array = ma.array(arr, mask=(arr == ndv))
-
     # If we assume that the asc's projection is RD, then the absolute
     # PixelSize gives the width of a pixel in m
-    geo_transform = dataset.GetGeoTransform()
     widthx = abs(geo_transform[1])
     widthy = abs(geo_transform[5])
     cellsize_in_m2 = widthx * widthy
