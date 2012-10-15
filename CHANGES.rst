@@ -5,7 +5,9 @@ Changelog of flooding-worker
 1.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+Modify calculate_scenario_statistics so that it also under Windows
+(there were problems with deleting directories while the files in them
+were still open).
 
 
 1.5 (2012-10-15)

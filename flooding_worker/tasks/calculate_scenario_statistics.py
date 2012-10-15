@@ -45,7 +45,8 @@ def calculate_statistics(scenario_id):
                 ndv = dataset.GetRasterBand(1).GetNoDataValue()
                 masked_array = ma.array(arr, mask=(arr == ndv))
                 geo_transform = dataset.GetGeoTransform()
-                del dataset  # Does this close the file?
+                del dataset  # This closes the file, so that the
+                             # directory can be deleted in Windows
                 break
 
     if arr is None:
