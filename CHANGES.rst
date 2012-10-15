@@ -2,7 +2,7 @@ Changelog of flooding-worker
 ===================================================
 
 
-1.6 (unreleased)
+1.6 (2012-10-15)
 ----------------
 
 Modify calculate_scenario_statistics so that it also under Windows
